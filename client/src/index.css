@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@theme {
+    --font-sans: 'Outfit', system-ui, sans-serif;
+}
+
+/* Global Styles */
+body {
+    font-family: var(--font-sans);
+    background-color: #f8fafc;
+    /* Slate-50 - Ultra clean */
+    min-height: 100vh;
+    color: #0f172a;
+    /* Slate-900 */
+    overflow-x: hidden;
+}
+
+/* Glassmorphism Utilities - Modern Clean */
+@utility glass {
+    @apply bg-white/80 backdrop-blur-xl border border-white/60 shadow-sm supports-[backdrop-filter]:bg-white/60;
+}
+
+@utility glass-card {
+    @apply bg-white border border-slate-200/60 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-200 hover:-translate-y-1 transition-all duration-300;
+}
+
+@utility glass-panel {
+    @apply bg-white/90 backdrop-blur-2xl border border-white/50 rounded-[2rem] shadow-xl shadow-slate-200/50 ring-1 ring-black/5;
+}
+
+@utility sidebar-glass {
+    @apply bg-white/90 backdrop-blur-2xl border-r border-slate-200 h-screen supports-[backdrop-filter]:bg-white/80;
+}
+
+/* Buttons - Modern Electric Blue */
+@utility btn-primary-glass {
+    @apply px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/20 hover:scale-[1.02] active:scale-95 transition-all duration-200 border border-transparent shadow-md shadow-blue-600/10;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-scale-in {
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scrollbar Polish - Modern */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    /* Slate-300 */
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+    /* Slate-400 */
+}
