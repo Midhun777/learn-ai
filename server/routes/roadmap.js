@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const Roadmap = require('../models/Roadmap');
+const AuditLog = require('../models/AuditLog');
 const { generateRoadmap } = require('../services/geminiService');
 
 // @route   POST api/roadmap/generate
@@ -9,15 +10,31 @@ const { generateRoadmap } = require('../services/geminiService');
 // @access  Private
 router.post('/generate', auth, async (req, res) => {
     try {
-        const { skill } = req.body;
+        const { skill, skillLevel, deadlineDays, hoursPerDay, learningGoal } = req.body;
         if (!skill) {
             return res.status(400).json({ msg: 'Skill is required' });
         }
 
-        const roadmapData = await generateRoadmap(skill);
+        const roadmapData = await generateRoadmap({ 
+            skill, 
+            skillLevel, 
+            deadlineDays, 
+            hoursPerDay, 
+            learningGoal 
+        });
+
+        // Log generation
+        const log = new AuditLog({
+            userId: req.user.id,
+            action: 'ROADMAP_GENERATE',
+            metadata: { skill }
+        });
+        await log.save();
+
         res.json(roadmapData);
     } catch (err) {
         console.error(err.message);
+        require('fs').appendFileSync('generate_error.log', (err.stack || err.message) + '\\n');
         res.status(500).send('Server Error');
     }
 });
@@ -37,9 +54,21 @@ router.post('/save', auth, async (req, res) => {
         });
 
         const roadmap = await newRoadmap.save();
+
+        // Log save
+        const log = new AuditLog({
+            userId: req.user.id,
+            action: 'ROADMAP_SAVE',
+            targetId: roadmap.id,
+            targetModel: 'Roadmap',
+            metadata: { skill }
+        });
+        await log.save();
+
         res.json(roadmap);
     } catch (err) {
         console.error(err.message);
+        require('fs').appendFileSync('save_error.log', (err.stack || err.message) + '\\n');
         res.status(500).send('Server Error');
     }
 });
@@ -185,7 +214,7 @@ router.post('/:id/schedule', auth, async (req, res) => {
         roadmap.phases.forEach((phase, pIdx) => {
             phase.topics.forEach((topic, tIdx) => {
                 if (!topic.completed) {
-                    allTopics.push({ name: topic.topicName, pIdx, tIdx });
+                    allTopics.push({ name: topic.title || topic.topicName, pIdx, tIdx });
                 }
             });
         });
@@ -256,6 +285,65 @@ router.put('/:id/topic/time', auth, async (req, res) => {
         await roadmap.save();
         res.json(roadmap);
 
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   GET api/roadmap/user/career-data
+// @desc    Aggregate career data (Skills, Projects, Certificates)
+// @access  Private
+router.get('/user/career-data', auth, async (req, res) => {
+    try {
+        const roadmaps = await Roadmap.find({ userId: req.user.id });
+
+        const careerData = {
+            skills: [],
+            projects: [],
+            certificates: []
+        };
+
+        roadmaps.forEach(roadmap => {
+            // Aggregate Skills
+            if (roadmap.skill && !careerData.skills.includes(roadmap.skill)) {
+                careerData.skills.push(roadmap.skill);
+            }
+
+            // Aggregate Certificates
+            if (roadmap.isCompleted) {
+                careerData.certificates.push({
+                    id: roadmap._id,
+                    skill: roadmap.skill,
+                    completedAt: roadmap.updatedAt || roadmap.createdAt
+                });
+            }
+
+            // Aggregate Projects
+            roadmap.phases.forEach(phase => {
+                // Phase Projects
+                if (phase.handsOnProject && phase.handsOnProject.completed) {
+                    careerData.projects.push({
+                        title: phase.handsOnProject.title,
+                        description: phase.handsOnProject.description,
+                        skill: roadmap.skill,
+                        type: 'Phase Project'
+                    });
+                }
+            });
+
+            // Capstone Projects
+            if (roadmap.capstoneProject && roadmap.capstoneProject.completed) {
+                careerData.projects.push({
+                    title: roadmap.capstoneProject.title,
+                    description: roadmap.capstoneProject.description,
+                    skill: roadmap.skill,
+                    type: 'Capstone Challenge'
+                });
+            }
+        });
+
+        res.json(careerData);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

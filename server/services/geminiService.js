@@ -1,35 +1,65 @@
 const axios = require('axios');
 
-const generateRoadmap = async (skill) => {
+const generateRoadmap = async ({ skill, skillLevel, deadlineDays, hoursPerDay, learningGoal }) => {
     try {
         const apiKey = process.env.GEMINI_API_KEY;
         const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
         const promptText = `
-        Create a detailed learning roadmap for: "${skill}".
-        Return ONLY a raw JSON object (no markdown formatting, no backticks) with this structure:
+        You are an AI learning assistant that generates structured learning roadmaps.
+
+        Based on the user's learning details, create a personalized roadmap to help them achieve their goal within the specified time.
+        
+        User Details:
+        Skill to Learn: ${skill}
+        Current Skill Level: ${skillLevel || 'beginner'}
+        Learning Deadline: ${deadlineDays || 30} days
+        Daily Study Time: ${hoursPerDay || 2} hours
+        Learning Goal: ${learningGoal || 'job preparation'}
+
+        Instructions:
+        1. Generate a clear step-by-step learning roadmap.
+        2. Divide the roadmap into phases or weeks based on the deadline.
+        3. Adjust the difficulty based on the user's skill level.
+        4. Suggest useful resources such as: Documentation, YouTube tutorials, Online courses, Practice exercises.
+        5. Include small tasks or mini-projects for each phase.
+        6. Suggest one final capstone project at the end.
+        7. Ensure the roadmap fits within the user's daily learning time.
+        8. Keep the roadmap practical and beginner-friendly if the user is a beginner.
+
+        CRITICAL OUTPUT FORMAT REQUIREMENT:
+        Return ONLY a raw JSON object (no markdown formatting, no backticks) with this exact structure:
         {
           "skill": "${skill}",
-          "description": "Short description",
+          "description": "Short description of the roadmap objective",
           "phases": [
             {
-              "phaseName": "Beginner",
+              "name": "Phase Name (e.g. Week 1: Core Concepts)",
               "estimatedTime": "Time duration",
-              "topics": [{"topicName": "Topic 1"}, {"topicName": "Topic 2"}],
-              "resources": [{"title": "Resource Title", "url": "URL", "type": "documentation/video/website"}],
+              "topics": [
+                {
+                  "title": "Topic Title",
+                  "description": "Short explanation of what will be learned",
+                  "time": "e.g. 2 hours",
+                  "resources": [
+                    {"name": "Resource Name", "url": "URL (CRITICAL: MUST be a real verifiable link OR a YouTube search link like https://www.youtube.com/results?search_query=topic+name. NEVER make up fake URLs.)"}
+                  ]
+                }
+              ],
               "handsOnProject": {"title": "Project Title", "description": "Short description"}
-            },
-           // ... Intermediate and Advanced phases
+            }
           ],
           "capstoneProject": {"title": "Capstone Title", "description": "Project description"}
         }
+        Generate at least 3 phases corresponding to the timeline.
         `;
 
         const response = await axios.post(
             url,
             {
-                contents: [{ parts: [{ text: promptText }] }]
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: { responseMimeType: "application/json" }
             },
             {
                 headers: { 'Content-Type': 'application/json' }
@@ -38,16 +68,17 @@ const generateRoadmap = async (skill) => {
 
         let generatedText = response.data.candidates[0].content.parts[0].text;
 
-        // Cleanup JSON string if it contains markdown code blocks
-        generatedText = generatedText.replace(/```json/g, '').replace(/```/g, '').trim();
+        // Robust JSON extraction
+        const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('No JSON structure found in response');
+        }
 
-        return JSON.parse(generatedText);
+        const jsonStr = jsonMatch[0];
+        return JSON.parse(jsonStr);
 
     } catch (error) {
         console.error('Gemini API Error:', error.response?.data || error.message);
-        if (error instanceof SyntaxError) {
-            console.error('Raw Generated Text:', response.data.candidates[0].content.parts[0].text);
-        }
         throw new Error('Failed to generate roadmap');
     }
 
@@ -193,4 +224,61 @@ const generateStudySchedule = async (topics, hoursPerWeek = 5) => {
     }
 };
 
-module.exports = { generateRoadmap, getExplanation, chatWithAI, generateStudySchedule };
+const generateCareerRecommendation = async (skills, interests, experienceLevel) => {
+    try {
+        const apiKey = process.env.GEMINI_API_KEY;
+        const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+        const promptText = `
+        You are an expert AI Career Counselor.
+
+        Based on the user's profile, recommend the top 3-5 best-fitting career paths or job roles.
+
+        User Profile:
+        Skills: ${skills.join(', ')}
+        Interests: ${interests.join(', ')}
+        Experience Level: ${experienceLevel}
+
+        CRITICAL OUTPUT FORMAT REQUIREMENT:
+        Return ONLY a raw JSON object (no markdown formatting, no backticks) with this structure:
+        {
+          "recommendations": [
+            {
+              "role": "Job Title (e.g., Frontend Developer)",
+              "description": "Short explanation of why this fits and what they would do.",
+              "matchPercentage": 95,
+              "salaryRange": "Estimated salary range based on experience level",
+              "keySkillsRequired": ["React", "CSS", "JavaScript"]
+            }
+          ]
+        }
+        `;
+
+        const response = await axios.post(
+            url,
+            {
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: { responseMimeType: "application/json" }
+            },
+            { headers: { 'Content-Type': 'application/json' } }
+        );
+
+        let generatedText = response.data.candidates[0].content.parts[0].text;
+        
+        // Robust JSON extraction
+        const jsonMatch = generatedText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error('No JSON structure found in response');
+        }
+
+        const jsonStr = jsonMatch[0];
+        return JSON.parse(jsonStr);
+
+    } catch (error) {
+        console.error('Gemini Career Recommendation Error:', error.response?.data || error.message);
+        throw new Error('Failed to generate career recommendations');
+    }
+};
+
+module.exports = { generateRoadmap, getExplanation, chatWithAI, generateStudySchedule, generateCareerRecommendation };

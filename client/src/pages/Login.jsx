@@ -1,69 +1,120 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Box, ArrowRight } from 'lucide-react';
 
 const Login = () => {
-    const [formData, setFormData] = useState({ email: '', password: '' });
-    const { login } = useContext(AuthContext);
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { login, user } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+    useEffect(() => {
+        if (user) navigate('/dashboard');
+    }, [user, navigate]);
 
-    const onSubmit = async e => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setIsLoading(true);
         try {
-            await login(formData);
+            await login(email, password);
             navigate('/dashboard');
         } catch (err) {
-            alert(err.response?.data?.msg || 'Login failed');
+            setError(err.response?.data?.msg || 'Authentication failed. Please check your credentials.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-[80vh] px-4">
-            <div className="glass-panel w-full max-w-md p-10 animate-fade-in relative overflow-hidden">
-                {/* Decoration */}
-                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-indigo-500 rounded-full blur-3xl opacity-20"></div>
+        <div className="min-h-screen bg-ui-bg flex items-center justify-center p-6 selection:bg-brand-primary selection:text-white">
+            <div className="w-full max-w-md animate-fade-in relative z-10">
+                {/* Logo & Header */}
+                <div className="flex flex-col items-center mb-8">
+                    <Link to="/" className="flex items-center justify-center w-12 h-12 bg-gray-900 text-white rounded-xl shadow-sm hover:scale-105 transition-transform duration-300 mb-6 group">
+                        <Box className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" />
+                    </Link>
+                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">Welcome back</h1>
+                    <p className="text-gray-500 text-sm">Log in to your account to continue</p>
+                </div>
 
-                <h2 className="text-3xl font-extrabold text-center text-gray-900 mb-2 relative z-10">Welcome Back</h2>
-                <p className="text-center text-gray-500 mb-8 relative z-10">Sign in to continue your learning journey</p>
+                {/* Main Card */}
+                <div className="bg-white rounded-2xl shadow-premium border border-ui-border p-8">
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-gray-700">Email Address</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+                                <input
+                                    type="email"
+                                    placeholder="name@example.com"
+                                    className="m-input pl-10 h-11"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
 
-                <form className="space-y-5 relative z-10" onSubmit={onSubmit}>
-                    <div className="relative group">
-                        <Mail className="absolute top-3.5 left-4 text-gray-400 w-5 h-5 group-focus-within:text-indigo-500 transition-colors" />
-                        <input
-                            type="email"
-                            placeholder="Email Address"
-                            name="email"
-                            value={formData.email}
-                            onChange={onChange}
-                            required
-                            className="floating-input pl-12"
-                        />
-                    </div>
-                    <div className="relative group">
-                        <Lock className="absolute top-3.5 left-4 text-gray-400 w-5 h-5 group-focus-within:text-indigo-500 transition-colors" />
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            name="password"
-                            value={formData.password}
-                            onChange={onChange}
-                            required
-                            className="floating-input pl-12"
-                        />
-                    </div>
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between items-center">
+                                <label className="text-sm font-medium text-gray-700">Password</label>
+                                <button type="button" className="text-xs font-medium text-brand-primary hover:text-black transition-colors">Forgot password?</button>
+                            </div>
+                            <div className="relative group">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+                                <input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    className="m-input pl-10 h-11"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
 
-                    <button type="submit" className="btn-primary-glass w-full flex items-center justify-center gap-2 group">
-                        Sign In <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </button>
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-center gap-2 animate-fade-in shadow-sm">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
 
-                    <p className="text-center text-gray-600 mt-6 text-sm">
-                        Don't have an account? <Link to="/register" className="text-indigo-600 font-bold hover:underline">Create Account</Link>
-                    </p>
-                </form>
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="btn-primary w-full h-11 mt-2 text-sm font-medium justify-center flex items-center gap-2 shadow-sm"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                    <span>Signing in...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Sign In</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Footer Link */}
+                <p className="text-center text-sm text-gray-500 mt-8">
+                    Don't have an account?{' '}
+                    <Link to="/register" className="font-medium text-gray-900 hover:text-black hover:underline underline-offset-4 transition-all">
+                        Sign up
+                    </Link>
+                </p>
             </div>
+
+            {/* Subtle mesh background effect - pure CSS */}
+            <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50 z-0 pointer-events-none"></div>
         </div>
     );
 };

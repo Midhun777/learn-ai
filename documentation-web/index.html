@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPath AI | Project Documentation</title>
+    <link rel="stylesheet" href="index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i data-lucide="brain-circuit"></i>
+                <span>EduPath AI</span>
+            </div>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#abstract" class="active"><i data-lucide="file-text"></i> Abstract</a></li>
+            <li><a href="#database"><i data-lucide="database"></i> Database</a></li>
+            <li><a href="#erd"><i data-lucide="git-branch"></i> ER Diagram</a></li>
+            <li><a href="#dfd"><i data-lucide="workflow"></i> Data Flow</a></li>
+            <li><a href="#assumptions"><i data-lucide="list-checks"></i> Assumptions</a></li>
+        </ul>
+        <div class="sidebar-footer">
+            <button class="btn-print" onclick="window.print()">
+                <i data-lucide="printer"></i> Export PDF
+            </button>
+        </div>
+    </nav>
+
+    <main class="content">
+        <header class="main-header">
+            <h1>Project Documentation</h1>
+            <p class="subtitle">An Intelligent Personalized Learning Roadmap Ecosystem</p>
+        </header>
+
+        <section id="abstract" class="doc-section">
+            <div class="section-badge">Section 1</div>
+            <h2>Project Abstract</h2>
+            <div class="card glass">
+                <p>
+                    <strong>EduPath AI</strong> is an innovative digital ecosystem designed to bridge the gap between aspirational learning goals and structured educational pathways. In an era of informational overflow, learners often struggle to identify the most efficient sequence of study for complex skills. This project presents a full-stack solution that leverages Generative Artificial Intelligence (Gemini API) to curate personalized, high-quality learning roadmaps.
+                </p>
+                <p>
+                    The system incorporates three distinct user tiers: <strong>Administrators</strong>, who oversee platform health and resource validation; <strong>Instructors</strong>, who contribute specialized content and monitor roadmap effectiveness; and <strong>Students</strong>, who engage in personalized learning journeys. 
+                </p>
+                <p>
+                    Key features include dynamic roadmap generation, resource curation with estimated timelines, progress tracking, and automated certification upon milestone completion. Built on a modern MERN (MongoDB, Express, React, Node.js) architecture, EduPath AI ensures scalability, responsiveness, and a premium user experience tailored for the modern academic environment.
+                </p>
+            </div>
+        </section>
+
+        <section id="database" class="doc-section">
+            <div class="section-badge">Section 2</div>
+            <h2>Database Structure</h2>
+            
+            <div class="table-container card glass">
+                <h3>TABLE: tbl_users</h3>
+                <p class="table-desc">Stores primary authentication and profile information for all system users.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sl no</th>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>user_id</td><td>INT</td><td>Unique identifier for the user (Primary Key).</td></tr>
+                        <tr><td>2</td><td>full_name</td><td>VARCHAR(100)</td><td>Complete name of the user.</td></tr>
+                        <tr><td>3</td><td>email_addr</td><td>VARCHAR(150)</td><td>Official email address (Unique).</td></tr>
+                        <tr><td>4</td><td>pwd_hash</td><td>VARCHAR(255)</td><td>Encrypted password string.</td></tr>
+                        <tr><td>5</td><td>user_role</td><td>VARCHAR(20)</td><td>'Admin', 'Instructor', or 'Student'.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-container card glass">
+                <h3>TABLE: tbl_roadmaps</h3>
+                <p class="table-desc">Contains details of the AI-generated or instructor-curated learning paths.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sl no</th>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>roadmap_id</td><td>INT</td><td>Unique roadmap identifier (Primary Key).</td></tr>
+                        <tr><td>2</td><td>skill_name</td><td>VARCHAR(100)</td><td>Name of the skill or subject.</td></tr>
+                        <tr><td>3</td><td>difficulty_lvl</td><td>VARCHAR(50)</td><td>Beginner, Intermediate, Advanced.</td></tr>
+                        <tr><td>4</td><td>created_by</td><td>INT</td><td>Creator's user ID (Foreign Key).</td></tr>
+                        <tr><td>5</td><td>category_id</td><td>INT</td><td>Categorical grouping ID (Foreign Key).</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-container card glass">
+                <h3>TABLE: tbl_resources</h3>
+                <p class="table-desc">Stores individual learning assets associated with specific roadmaps.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sl no</th>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>res_id</td><td>INT</td><td>Unique resource identifier (Primary Key).</td></tr>
+                        <tr><td>2</td><td>res_title</td><td>VARCHAR(200)</td><td>Title of the learning material.</td></tr>
+                        <tr><td>3</td><td>res_url</td><td>TEXT</td><td>Direct link to the resource.</td></tr>
+                        <tr><td>4</td><td>roadmap_id</td><td>INT</td><td>Roadmap ID (Foreign Key).</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="erd" class="doc-section">
+            <div class="section-badge">Section 3</div>
+            <h2>Entity Relationship (ER) Diagram</h2>
+            <div class="diagram-card card glass">
+                <img src="erd.png" alt="Chen ER Diagram">
+                <div class="diagram-info">
+                    <p><i data-lucide="info"></i> Standard Chen Model representing Student, Roadmap, and Feedback entities.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="dfd" class="doc-section">
+            <div class="section-badge">Section 4</div>
+            <h2>Data Flow Diagrams (DFD)</h2>
+            <div class="diagram-card card glass">
+                <img src="dfd.png" alt="Data Flow Diagrams">
+                <div class="diagram-info">
+                    <p><i data-lucide="info"></i> Multi-level functional flow (Level 0, 1, 1.2, 1.3).</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="assumptions" class="doc-section">
+            <div class="section-badge">Section 5</div>
+            <h2>System Assumptions</h2>
+            <div class="grid-assumptions">
+                <div class="assumption-card card glass">
+                    <i data-lucide="globe"></i>
+                    <h4>Connectivity</h4>
+                    <p>Assumes persistent internet for Gemini API and external resources.</p>
+                </div>
+                <div class="assumption-card card glass">
+                    <i data-lucide="shield-check"></i>
+                    <h4>Authentication</h4>
+                    <p>Primary security is handled via JWT-based authorization.</p>
+                </div>
+                <div class="assumption-card card glass">
+                    <i data-lucide="database"></i>
+                    <h4>Persistence</h4>
+                    <p>Data stored in MongoDB, presented here in relational format for clarity.</p>
+                </div>
+                <div class="assumption-card card glass">
+                    <i data-lucide="sparkles"></i>
+                    <h4>AI Quality</h4>
+                    <p>Roadmap accuracy depends on LLM state and prompt engineering.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer class="doc-footer">
+            <p>&copy; 2026 EduPath AI Project Team. Academic Documentation.</p>
+        </footer>
+    </main>
+
+    <script>
+        lucide.createIcons();
+        
+        // Smooth scrolling and active link update
+        const sections = document.querySelectorAll('.doc-section');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(a => {
+                a.classList.remove('active');
+                if (a.getAttribute('href').includes(current)) {
+                    a.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

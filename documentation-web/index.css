@@ -1,0 +1,362 @@
+:root {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --bg-dark: #0f172a;
+    --card-bg: rgba(30, 41, 59, 0.7);
+    --border: rgba(255, 255, 255, 0.1);
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent: #10b981;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3, h4, .logo {
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Background Glow */
+.glow-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    border-right: 1px solid var(--border);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-light);
+    margin-bottom: 3rem;
+}
+
+.nav-links {
+    list-style: none;
+    flex-grow: 1;
+}
+
+.nav-links li {
+    margin-bottom: 0.5rem;
+}
+
+.nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    text-decoration: none;
+    color: var(--text-muted);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.nav-links a:hover, .nav-links a.active {
+    background: var(--card-bg);
+    color: var(--text-main);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.nav-links a.active i {
+    color: var(--primary);
+}
+
+.sidebar-footer {
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.btn-print {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 12px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.btn-print:hover {
+    transform: translateY(-2px);
+    background: var(--primary-light);
+}
+
+/* Main Content Area */
+.content {
+    margin-left: 280px;
+    padding: 4rem 6rem;
+    max-width: 1400px;
+}
+
+.main-header {
+    margin-bottom: 5rem;
+    text-align: center;
+}
+
+.main-header h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #fff, var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+}
+
+.section-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-light);
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.doc-section {
+    margin-bottom: 6rem;
+    scroll-margin-top: 100px;
+}
+
+.doc-section h2 {
+    font-size: 2.25rem;
+    margin-bottom: 2rem;
+    color: #fff;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 24px;
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+    transition: transform 0.3s ease;
+}
+
+.card.glass {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+.card p {
+    margin-bottom: 1.5rem;
+    font-size: 1.1rem;
+    color: var(--text-muted);
+}
+
+.card strong {
+    color: #fff;
+}
+
+/* Table Styling */
+.table-container {
+    margin-bottom: 2rem;
+}
+
+.table-container h3 {
+    margin-bottom: 0.5rem;
+    color: var(--primary-light);
+}
+
+.table-desc {
+    font-size: 0.95rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th {
+    text-align: left;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.5);
+    color: var(--text-main);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+}
+
+td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Diagram Styling */
+.diagram-card {
+    text-align: center;
+}
+
+.diagram-card img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    background: white; /* Academic diagrams usually have white bg */
+    padding: 1rem;
+}
+
+.diagram-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Assumptions Grid */
+.grid-assumptions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.assumption-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2rem !important;
+}
+
+.assumption-card i {
+    color: var(--primary-light);
+    width: 32px;
+    height: 32px;
+}
+
+.assumption-card h4 {
+    color: #fff;
+    font-size: 1.25rem;
+}
+
+/* Footer */
+.doc-footer {
+    text-align: center;
+    padding: 4rem 0;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.doc-section {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+/* Print Styling */
+@media print {
+    .sidebar, .glow-bg {
+        display: none !important;
+    }
+    .content {
+        margin-left: 0;
+        padding: 0;
+        color: #000;
+    }
+    .card {
+        border: 1px solid #eee;
+        background: none !important;
+        box-shadow: none !important;
+    }
+    .text-muted {
+        color: #333 !important;
+    }
+    h1, h2, h3 {
+        color: #000 !important;
+        background: none !important;
+        -webkit-text-fill-color: initial !important;
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .content {
+        padding: 3rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1.5rem;
+    }
+    .content {
+        margin-left: 0;
+        padding: 2rem;
+    }
+    .main-header h1 {
+        font-size: 2.5rem;
+    }
+}

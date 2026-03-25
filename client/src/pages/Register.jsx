@@ -1,85 +1,149 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { User, Mail, Lock, Sparkles } from 'lucide-react';
+import { User, Mail, Lock, AlertCircle, Box, ArrowRight } from 'lucide-react';
 
 const Register = () => {
-    const [formData, setFormData] = useState({ username: '', email: '', password: '' });
-    const { register } = useContext(AuthContext);
+    const [name, setName] = useState('');
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const { register, user } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+    useEffect(() => {
+        if (user) navigate('/dashboard');
+    }, [user, navigate]);
 
-    const onSubmit = async e => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setIsLoading(true);
         try {
-            await register(formData);
+            await register(name, username, email, password);
             navigate('/dashboard');
         } catch (err) {
-            alert(err.response?.data?.msg || 'Registration failed');
+            setError(err.response?.data?.msg || 'Registration failed. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-[80vh] px-4">
-            <div className="glass-panel w-full max-w-md p-10 animate-fade-in relative overflow-hidden">
-                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-40 h-40 bg-purple-500 rounded-full blur-3xl opacity-20"></div>
-
-                <div className="text-center mb-8 relative z-10">
-                    <div className="bg-indigo-50 w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-100 shadow-sm text-indigo-600">
-                        <Sparkles className="w-6 h-6" />
-                    </div>
-                    <h2 className="text-3xl font-extrabold text-gray-900">Create Account</h2>
-                    <p className="text-gray-500">Unlock your potential today</p>
+        <div className="min-h-screen bg-ui-bg flex items-center justify-center p-6 selection:bg-brand-primary selection:text-white">
+            <div className="w-full max-w-md animate-fade-in relative z-10 py-12">
+                {/* Logo & Header */}
+                <div className="flex flex-col items-center mb-8">
+                    <Link to="/" className="flex items-center justify-center w-12 h-12 bg-gray-900 text-white rounded-xl shadow-sm hover:scale-105 transition-transform duration-300 mb-6 group">
+                        <Box className="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" />
+                    </Link>
+                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">Create an account</h1>
+                    <p className="text-gray-500 text-sm">Start building your learning journey</p>
                 </div>
 
-                <form className="space-y-5 relative z-10" onSubmit={onSubmit}>
-                    <div className="relative group">
-                        <User className="absolute top-3.5 left-4 text-gray-400 w-5 h-5 group-focus-within:text-purple-500 transition-colors" />
-                        <input
-                            type="text"
-                            placeholder="Username"
-                            name="username"
-                            value={formData.username}
-                            onChange={onChange}
-                            required
-                            className="floating-input pl-12 focus:border-purple-400 focus:ring-purple-500/10"
-                        />
-                    </div>
-                    <div className="relative group">
-                        <Mail className="absolute top-3.5 left-4 text-gray-400 w-5 h-5 group-focus-within:text-purple-500 transition-colors" />
-                        <input
-                            type="email"
-                            placeholder="Email Address"
-                            name="email"
-                            value={formData.email}
-                            onChange={onChange}
-                            required
-                            className="floating-input pl-12 focus:border-purple-400 focus:ring-purple-500/10"
-                        />
-                    </div>
-                    <div className="relative group">
-                        <Lock className="absolute top-3.5 left-4 text-gray-400 w-5 h-5 group-focus-within:text-purple-500 transition-colors" />
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            name="password"
-                            value={formData.password}
-                            onChange={onChange}
-                            required
-                            className="floating-input pl-12 focus:border-purple-400 focus:ring-purple-500/10"
-                        />
-                    </div>
+                {/* Main Card */}
+                <div className="bg-white rounded-2xl shadow-premium border border-ui-border p-8">
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-gray-700">Full Name</label>
+                            <div className="relative group">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+                                <input
+                                    type="text"
+                                    required
+                                    className="m-input pl-10 h-11"
+                                    placeholder="John Doe"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                />
+                            </div>
+                        </div>
 
-                    <button type="submit" className="btn-primary-glass w-full bg-gradient-to-r from-indigo-600 to-purple-600 border-none hover:shadow-purple-500/30">
-                        Join For Free
-                    </button>
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-gray-700">Username</label>
+                            <div className="relative group">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+                                <input
+                                    type="text"
+                                    required
+                                    className="m-input pl-10 h-11"
+                                    placeholder="johndoe"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                />
+                            </div>
+                        </div>
 
-                    <p className="text-center text-gray-600 mt-6 text-sm">
-                        Already have an account? <Link to="/login" className="text-purple-600 font-bold hover:underline">Log In</Link>
-                    </p>
-                </form>
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-gray-700">Email Address</label>
+                            <div className="relative group">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+                                <input
+                                    type="email"
+                                    required
+                                    className="m-input pl-10 h-11"
+                                    placeholder="name@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-medium text-gray-700">Password</label>
+                            <div className="relative group">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
+                                <input
+                                    type="password"
+                                    required
+                                    className="m-input pl-10 h-11"
+                                    placeholder="••••••••"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {error && (
+                            <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-center gap-2 animate-fade-in shadow-sm">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="btn-primary w-full h-11 mt-4 text-sm font-medium justify-center flex items-center gap-2 shadow-sm"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                                    <span>Creating account...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span>Continue</span>
+                                    <ArrowRight className="w-4 h-4" />
+                                </>
+                            )}
+                        </button>
+                    </form>
+                </div>
+
+                {/* Footer Link */}
+                <p className="text-center text-sm text-gray-500 mt-8">
+                    Already have an account?{' '}
+                    <Link to="/login" className="font-medium text-gray-900 hover:text-black hover:underline underline-offset-4 transition-all">
+                        Sign in
+                    </Link>
+                </p>
             </div>
+
+            {/* Subtle mesh background effect - pure CSS */}
+            <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-50 z-0 pointer-events-none"></div>
         </div>
     );
 };

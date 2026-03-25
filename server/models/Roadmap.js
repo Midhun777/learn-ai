@@ -12,10 +12,19 @@ const RoadmapSchema = new mongoose.Schema({
     },
     phases: [
         {
-            phaseName: String, // Beginner, Intermediate, Advanced
+            name: String, // e.g. Beginner, Intermediate, Advanced
             topics: [
                 {
-                    topicName: String,
+                    topicName: String, // Keeping for compatibility
+                    title: String,
+                    description: String,
+                    time: String, // Estimated duration
+                    resources: [
+                        {
+                            name: String,
+                            url: String
+                        }
+                    ],
                     completed: {
                         type: Boolean,
                         default: false

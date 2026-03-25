@@ -2,6 +2,7 @@ import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
+const API_URL = 'http://localhost:5000/api';
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -30,22 +31,64 @@ export const AuthProvider = ({ children }) => {
             setLoading(false);
         };
         loadUser();
+
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            (error) => {
+                if (error.response && error.response.status === 401) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    delete axios.defaults.headers.common['x-auth-token'];
+                    setUser(null);
+                    window.location.href = '/login';
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
-    const register = async (formData) => {
-        const res = await axios.post('http://localhost:5000/api/auth/register', formData);
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.user)); // Simple user persistence
-        axios.defaults.headers.common['x-auth-token'] = res.data.token;
-        setUser(res.data.user);
+    const register = async (name, username, email, password) => {
+        try {
+            const res = await axios.post(`${API_URL}/auth/register`, { name, username, email, password });
+            const { token, user: userData } = res.data;
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(userData)); // Simple user persistence
+            axios.defaults.headers.common['x-auth-token'] = token;
+            setUser(userData);
+        } catch (error) {
+            console.error('Registration failed:', error.response ? error.response.data : error.message);
+            throw error; // Re-throw to allow component to handle
+        }
     };
 
-    const login = async (formData) => {
-        const res = await axios.post('http://localhost:5000/api/auth/login', formData);
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        axios.defaults.headers.common['x-auth-token'] = res.data.token;
-        setUser(res.data.user);
+    const login = async (email, password) => {
+        try {
+            const res = await axios.post(`${API_URL}/auth/login`, { email, password });
+            const { token, user: userData } = res.data;
+            localStorage.setItem('token', token);
+            localStorage.setItem('user', JSON.stringify(userData));
+            axios.defaults.headers.common['x-auth-token'] = token;
+            setUser(userData);
+        } catch (error) {
+            console.error('Login failed:', error.response ? error.response.data : error.message);
+            throw error;
+        }
+    };
+
+    const updateUser = async (data) => {
+        try {
+            const res = await axios.put(`${API_URL}/auth/profile`, data);
+            const { user: userData } = res.data;
+            localStorage.setItem('user', JSON.stringify(userData));
+            setUser(userData);
+        } catch (error) {
+            console.error('Update failed:', error.response ? error.response.data : error.message);
+            throw error;
+        }
     };
 
     const logout = () => {
@@ -56,7 +99,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, register, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, register, login, logout, updateUser, loading }}>
             {children}
         </AuthContext.Provider>
     );
