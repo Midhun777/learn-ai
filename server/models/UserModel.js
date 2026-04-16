@@ -25,12 +25,41 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'moderator', 'admin'],
+        enum: ['user', 'mentor', 'admin'],
         default: 'user'
     },
     isActive: {
         type: Boolean,
         default: true
+    },
+    xp: {
+        type: Number,
+        default: 0
+    },
+    level: {
+        type: Number,
+        default: 1
+    },
+    streak: {
+        type: Number,
+        default: 0
+    },
+    totalPoints: {
+        type: Number,
+        default: 0
+    },
+    badges: [
+        {
+            name: String,
+            icon: String,
+            unlockedAt: {
+                type: Date,
+                default: Date.now
+            }
+        }
+    ],
+    lastActiveDate: {
+        type: String // YYYY-MM-DD
     },
     createdAt: {
         type: Date,

@@ -15,24 +15,24 @@ const Home = () => {
                     </div>
 
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-900 tracking-tight leading-[1.05] mb-8">
-                        The AI-architected <br className="hidden md:block" />
+                        Learn anything <br className="hidden md:block" />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-500">
-                            learning infrastructure.
+                            fast with AI.
                         </span>
                     </h1>
 
                     <p className="text-lg md:text-xl text-gray-500 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
-                        Eliminate tutorial hell. We utilize advanced LLM prompting to synthesize highly structured, deterministic learning graphs tailored to your exact domain. Featuring real-time state tracking, AI-validated capstones, and automated resume compilation.
+                        Skip the confusion. We use AI to create clear, step-by-step guides for anything you want to learn. Track your progress, build real projects, and earn a certificate of completion.
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link to="/register" className="w-full sm:w-auto px-8 py-3.5 bg-gray-900 hover:bg-black text-white rounded-full font-medium transition-all shadow-sm hover:shadow-premium flex items-center justify-center gap-2 transform active:scale-95">
-                            Initialize Engine
+                            Get Started
                             <ArrowRight className="w-4 h-4 text-white" />
                         </Link>
                         <a href="#how-to-use" className="w-full sm:w-auto px-8 py-3.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 rounded-full font-medium transition-all flex items-center justify-center gap-2 transform active:scale-95 shadow-sm">
                             <PlayCircle className="w-4 h-4" />
-                            View Execution Flow
+                            How it Works
                         </a>
                     </div>
                 </div>
@@ -42,17 +42,17 @@ const Home = () => {
             <section id="how-to-use" className="py-24 px-6 bg-white relative z-10 border-t border-gray-100">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-20">
-                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Runtime Execution</h2>
-                        <h3 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-6">The Client Workflow.</h3>
-                        <p className="text-lg text-gray-500 max-w-2xl mx-auto">A deterministic, four-step pipeline transitioning user intent into a cryptographically verified portfolio.</p>
+                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Simple Process</h2>
+                        <h3 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-6">How it Works.</h3>
+                        <p className="text-lg text-gray-500 max-w-2xl mx-auto">Four simple steps to go from zero to building your own projects.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         {[
-                            { num: "01", title: "Authenticate", desc: "Create a secure account protected by bcrypt hashing and stateless JWT session tokens. This initializes your personal data vault in our MongoDB cluster." },
-                            { num: "02", title: "Define Intent", desc: "Navigate to the Dashboard and construct a query (e.g., 'React Server Components', 'Docker Swarm'). The local proxy forwards your prompt to the orchestration layer." },
-                            { num: "03", title: "Execute Nodes", desc: "Follow the generated Directed Acyclic Graph (DAG) sequentially. Invoking the 'complete' mutation advances the global state of your learning path in real-time." },
-                            { num: "04", title: "Synthesize", desc: "Upon traversing all graph nodes, the system mounts a virtual DOM tree to automatically compile your projects into an exportable PDF artifact via html2canvas." }
+                            { num: "01", title: "Create Account", desc: "Sign up in seconds. Your data is kept private and secure using industry-standard protection." },
+                            { num: "02", title: "Choose a Skill", desc: "Search for anything you want to learn. Our AI will instantly build a custom path just for you." },
+                            { num: "03", title: "Start Lessons", desc: "Follow your step-by-step guide. Mark lessons as done to track your progress and earn points." },
+                            { num: "04", title: "Get Certified", desc: "Complete the path and projects to get a certificate that proves your new skills." }
                         ].map((step, i) => (
                             <div key={i} className="flex flex-col relative p-6 saas-card bg-gray-50/50 border-none shadow-none">
                                 <div className="text-6xl font-black text-gray-200 mb-4 absolute -top-4 -left-2 z-0 pointer-events-none opacity-50">{step.num}</div>
@@ -123,25 +123,25 @@ const Home = () => {
                         </div>
 
                         <div>
-                            <h2 className="text-xs font-bold text-brand-primary uppercase tracking-widest mb-4">Orchestration Layer</h2>
-                            <h3 className="text-4xl font-bold tracking-tight text-gray-900 mb-6">Generative AI, constrained.</h3>
+                            <h2 className="text-xs font-bold text-brand-primary uppercase tracking-widest mb-4">Our AI Brain</h2>
+                            <h3 className="text-4xl font-bold tracking-tight text-gray-900 mb-6">Smart learning, simplified.</h3>
                             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                                standard conversational AI is non-deterministic. We solve this by wrapping the Google Gemini 2.5 Flash model in a rigid programmatic harness.
+                                We use the latest AI models but keep them on a tight leash to ensure you get accurate, high-quality learning paths every time.
                             </p>
 
                             <div className="space-y-6">
                                 <div className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
                                     <FileJson className="w-6 h-6 text-brand-primary shrink-0" />
                                     <div>
-                                        <h4 className="font-bold text-gray-900 mb-1">JSON Schema Enforcement</h4>
-                                        <p className="text-sm text-gray-500">The engine rejects any response that deviates from the predefined `Roadmap` interface. The LLM is forced to output valid syntax via system directives, ensuring the client UI never crashes on undefined properties.</p>
+                                        <h4 className="font-bold text-gray-900 mb-1">Guaranteed Accuracy</h4>
+                                        <p className="text-sm text-gray-500">Every lesson is checked to ensure it follows a logical path. No more confusing or broken links.</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4 p-5 bg-white rounded-xl border border-gray-200 shadow-sm">
                                     <Network className="w-6 h-6 text-brand-primary shrink-0" />
                                     <div>
-                                        <h4 className="font-bold text-gray-900 mb-1">Hallucination Mitigation</h4>
-                                        <p className="text-sm text-gray-500">By restricting the model's temperature parameter and appending vast contextual taxonomies to the request, we drastically reduce the possibility of generating outdated or fictitious learning resources.</p>
+                                        <h4 className="font-bold text-gray-900 mb-1">Real-World Focused</h4>
+                                        <p className="text-sm text-gray-500">We prioritize modern, practical resources so you learn skills that actually matter in the industry today.</p>
                                     </div>
                                 </div>
                             </div>
@@ -366,15 +366,15 @@ const Home = () => {
             <section className="py-24 px-6 bg-white border-b border-gray-100">
                 <div className="max-w-6xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-xs font-bold text-red-500 bg-red-50 border border-red-100 rounded-full px-3 py-1 inline-block uppercase tracking-widest mb-6">Security Context</h2>
-                        <h3 className="text-3xl font-bold text-gray-900 tracking-tight">Enterprise-grade protection.</h3>
+                        <h2 className="text-xs font-bold text-red-500 bg-red-50 border border-red-100 rounded-full px-3 py-1 inline-block uppercase tracking-widest mb-6">Safe and Secure</h2>
+                        <h3 className="text-3xl font-bold text-gray-900 tracking-tight">Your data is in good hands.</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {[
-                            { icon: ShieldAlert, title: "JWT Signing", desc: "All protected routes are guarded by strictly typed middleware that decodes and verifies the HMAC SHA256 signature of your token." },
-                            { icon: Key, title: "Bcrypt Salting", desc: "Passwords never exist in plaintext. They undergo 10 rounds of cryptographic salting before persistence, preventing rainbow table attacks." },
-                            { icon: Fingerprint, title: "CORS Constraints", desc: "The Express API explicitly defines allowed origins, preventing cross-site request forgery and hijacking." }
+                            { icon: ShieldAlert, title: "Private Access", desc: "Your account is protected by industry-standard security. Only you can access your saved paths and progress." },
+                            { icon: Key, title: "Secure Password", desc: "We use advanced encryption to keep your password safe. It is never stored in plain text." },
+                            { icon: Fingerprint, title: "Data Safety", desc: "Our system is built to prevent common web attacks, keeping your learning experience safe and private." }
                         ].map((item, i) => (
                             <div key={i} className="flex flex-col items-center text-center p-8 saas-card border-gray-200">
                                 <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-6">
@@ -424,10 +424,10 @@ const Home = () => {
                         <div className="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/20 blur-[100px] rounded-full pointer-events-none"></div>
 
                         <Activity className="w-12 h-12 text-white/50 mx-auto mb-6 relative z-10 animate-pulse" />
-                        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 relative z-10">Compile your first roadmap.</h2>
-                        <p className="text-gray-400 text-lg mb-12 max-w-xl mx-auto relative z-10 leading-relaxed">Initialize your account locally through the authentication layer and let the engine architect your verified learning infrastructure.</p>
+                        <h2 className="text-4xl md:text-6xl font-black text-white tracking-tight mb-6 relative z-10">Start your journey today.</h2>
+                        <p className="text-gray-400 text-lg mb-12 max-w-xl mx-auto relative z-10 leading-relaxed">Join thousands of learners using AI to master new skills faster than ever before.</p>
                         <Link to="/register" className="inline-flex items-center justify-center px-10 py-4 bg-white text-gray-900 hover:bg-gray-100 rounded-full font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg relative z-10">
-                            Initialize Engine
+                            Get Started Now
                         </Link>
                     </div>
                 </div>

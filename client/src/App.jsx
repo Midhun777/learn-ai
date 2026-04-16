@@ -13,7 +13,11 @@ import ResumeBuilder from './pages/ResumeBuilder';
 import LoadingScreen from './components/LoadingScreen';
 import Profile from './pages/Profile';
 import CareerRecommendation from './pages/CareerRecommendation';
+import MentorDashboard from './pages/MentorDashboard';
+import UserMessages from './pages/UserMessages';
 import PrivateRoute from './components/PrivateRoute';
+import Leaderboard from './pages/Leaderboard';
+import Community from './pages/Community';
 import { useContext } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import AuthContext from './context/AuthContext';
@@ -49,11 +53,15 @@ function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/profile/:username" element={<PublicProfile />} />
             <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+            <Route path="/mentor/dashboard" element={<PrivateRoute><MentorDashboard /></PrivateRoute>} />
+            <Route path="/messages" element={<PrivateRoute><UserMessages /></PrivateRoute>} />
             <Route path="/career/resume" element={<PrivateRoute><ResumeBuilder /></PrivateRoute>} />
             <Route path="/career-recommendation" element={<PrivateRoute><CareerRecommendation /></PrivateRoute>} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/roadmap/:id" element={<PrivateRoute><RoadmapView /></PrivateRoute>} />
             <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+            <Route path="/leaderboard" element={<PrivateRoute><Leaderboard /></PrivateRoute>} />
+            <Route path="/community" element={<PrivateRoute><Community /></PrivateRoute>} />
           </Routes>
         </AppLayout>
       </Router>

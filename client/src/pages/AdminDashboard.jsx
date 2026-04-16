@@ -324,7 +324,7 @@ const AdminDashboard = () => {
                         </div>
                         <div className="flex items-center gap-3 w-full md:w-auto">
                             <div className="flex bg-slate-100/50 p-1 rounded-2xl w-full">
-                                {['all', 'user', 'moderator', 'admin'].map(role => (
+                                {['all', 'user', 'mentor', 'admin'].map(role => (
                                     <button
                                         key={role}
                                         onClick={() => setFilterRole(role)}
@@ -383,7 +383,7 @@ const AdminDashboard = () => {
                                                 className="bg-slate-50 border-none rounded-xl text-[10px] font-black uppercase tracking-widest px-4 py-2.5 outline-none focus:ring-2 focus:ring-slate-200 cursor-pointer appearance-none text-slate-900"
                                             >
                                                 <option value="user">Standard User</option>
-                                                <option value="moderator">System Moderator</option>
+                                                <option value="mentor">System Mentor</option>
                                                 <option value="admin">Main Administrator</option>
                                             </select>
                                         </td>
@@ -535,42 +535,63 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                     <div className="divide-y divide-slate-50">
-                        {logs.map(log => (
-                            <div key={log._id} className="p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-50/40 transition-all duration-300">
-                                <div className="flex items-start gap-6">
-                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${log.action.includes('ACTIVATE') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                        log.action.includes('DELETE') ? 'bg-rose-50 text-rose-600 border-rose-100' :
-                                            'bg-slate-900 text-brand-primary border-slate-800'
-                                        }`}>
-                                        <Server className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{log.action}</span>
-                                            <span className="px-3 py-1 bg-slate-100 rounded-full text-[8px] font-black text-slate-400 uppercase tracking-widest">
-                                                {new Date(log.timestamp).toLocaleDateString()} @ {new Date(log.timestamp).toLocaleTimeString()}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-slate-500 font-medium leading-relaxed italic">
-                                            Operation executed by operator <span className="text-slate-900 font-black">@{log.userId?.username || 'ROOT'}</span> impacting local identity cluster.
-                                        </p>
-                                        {log.metadata && Object.keys(log.metadata).length > 0 && (
-                                            <div className="mt-4 p-4 bg-slate-900 rounded-2xl border border-slate-800 shadow-inner">
-                                                <code className="text-[10px] text-brand-primary break-all font-mono leading-relaxed">
-                                                    {JSON.stringify(log.metadata, null, 2)}
-                                                </code>
+                        {logs.map(log => {
+                            const isCritical = log.action.includes('DELETE') || log.action.includes('PURGE');
+                            const isSuccess = log.action.includes('SUCCESS') || log.action.includes('LOGIN') || log.action.includes('ACTIVATE');
+                            
+                            return (
+                                <div key={log._id} className="p-8 flex flex-col gap-6 hover:bg-slate-50/40 transition-all duration-300">
+                                    <div className="flex items-center justify-between gap-6">
+                                        <div className="flex items-center gap-6">
+                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border transition-all ${
+                                                isSuccess ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                isCritical ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                                                'bg-indigo-50 text-indigo-600 border-indigo-100'
+                                            }`}>
+                                                <Server className="w-5 h-5" />
                                             </div>
-                                        )}
+                                            <div>
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <span className="text-sm font-black text-slate-900 uppercase tracking-tight">{log.action}</span>
+                                                    <div className="flex items-center gap-2 px-3 py-1 bg-slate-100 rounded-full">
+                                                        <Clock className="w-3 h-3 text-slate-400" />
+                                                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                                                            {new Date(log.timestamp).toLocaleDateString()} @ {new Date(log.timestamp).toLocaleTimeString()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <p className="text-[11px] text-slate-500 font-bold leading-relaxed uppercase tracking-wide">
+                                                    Operator <span className="text-slate-900 font-black">@{log.userId?.username || 'SYSTEM_ROOT'}</span> executed {log.action.toLowerCase().replace(/_/g, ' ')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="hidden lg:flex items-center gap-3">
+                                            <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
+                                                <CheckCircle className="w-3 h-3 text-emerald-500" />
+                                                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Verified Integrity</span>
+                                            </div>
+                                        </div>
                                     </div>
+                                    
+                                    {log.metadata && Object.keys(log.metadata).length > 0 && (
+                                        <div className="ml-18 p-6 bg-slate-50/50 rounded-3xl border border-slate-100/50 shadow-inner group">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <FileText className="w-3 h-3 text-slate-300" />
+                                                <span className="text-[8px] font-black text-slate-300 uppercase tracking-[0.2em]">Resource Metadata</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                {Object.entries(log.metadata).map(([key, value]) => (
+                                                    <div key={key} className="space-y-1">
+                                                        <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{key}</p>
+                                                        <p className="text-[10px] font-black text-slate-700 truncate">{String(value)}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex items-center gap-3 self-end lg:self-center">
-                                    <div className="px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl flex items-center gap-3">
-                                        <Check className="w-3 h-3 text-emerald-500" />
-                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Verified Integrity</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             )}

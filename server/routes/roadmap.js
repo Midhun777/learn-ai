@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const Roadmap = require('../models/Roadmap');
 const AuditLog = require('../models/AuditLog');
 const { generateRoadmap } = require('../services/geminiService');
+const GamificationService = require('../services/gamificationService');
 
 // @route   POST api/roadmap/generate
 // @desc    Generate a roadmap using AI
@@ -64,11 +65,15 @@ router.post('/save', auth, async (req, res) => {
             metadata: { skill }
         });
         await log.save();
+ 
+        // Gamification: Award XP for saving roadmap
+        await GamificationService.awardXP(req.user.id, 50, 'Roadmap Saved');
+        await GamificationService.updateStreak(req.user.id);
 
         res.json(roadmap);
     } catch (err) {
         console.error(err.message);
-        require('fs').appendFileSync('save_error.log', (err.stack || err.message) + '\\n');
+        require('fs').appendFileSync('save_error.log', (err.stack || err.message) + '\n');
         res.status(500).send('Server Error');
     }
 });
@@ -125,11 +130,30 @@ router.put('/:id/update', auth, async (req, res) => {
             return res.status(401).json({ msg: 'User not authorized' });
         }
 
+        // Gamification: Detect newly completed topics
+        let xpGained = 0;
+        const oldPhases = roadmap.phases;
+        
+        phases.forEach((phase, pIdx) => {
+            phase.topics.forEach((topic, tIdx) => {
+                const wasCompleted = oldPhases[pIdx]?.topics[tIdx]?.completed;
+                if (topic.completed && !wasCompleted) {
+                    xpGained += 20;
+                }
+            });
+        });
+
         roadmap.phases = phases;
         roadmap.capstoneProject = capstoneProject;
         roadmap.isCompleted = isCompleted;
-
+ 
         await roadmap.save();
+
+        if (xpGained > 0) {
+            await GamificationService.awardXP(req.user.id, xpGained, 'Topics Completed');
+        }
+        await GamificationService.updateStreak(req.user.id);
+
         res.json(roadmap);
 
     } catch (err) {
@@ -344,6 +368,112 @@ router.get('/user/career-data', auth, async (req, res) => {
         });
 
         res.json(careerData);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/roadmap/:id/phase/:phaseIndex/project
+// @desc    Submit Phase Project
+// @access  Private
+router.put('/:id/phase/:phaseIndex/project', auth, async (req, res) => {
+    try {
+        const { solutionUrl } = req.body;
+        const phaseIndex = parseInt(req.params.phaseIndex);
+        const roadmap = await Roadmap.findById(req.params.id);
+
+        if (!roadmap || roadmap.userId.toString() !== req.user.id) {
+            return res.status(404).json({ msg: 'Roadmap not found' });
+        }
+
+        if (!roadmap.phases[phaseIndex] || !roadmap.phases[phaseIndex].handsOnProject) {
+            return res.status(404).json({ msg: 'Project not found' });
+        }
+
+        roadmap.phases[phaseIndex].handsOnProject.completed = true;
+        roadmap.phases[phaseIndex].handsOnProject.solutionUrl = solutionUrl;
+        roadmap.phases[phaseIndex].handsOnProject.submittedAt = new Date();
+
+        roadmap.markModified('phases');
+        await roadmap.save();
+
+        // Gamification: Award XP for project submission
+        await GamificationService.awardXP(req.user.id, 150, 'Project Submitted');
+        await GamificationService.updateStreak(req.user.id);
+
+        res.json(roadmap);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST api/roadmap/clone/:id
+// @desc    Clone a roadmap to user's profile
+// @access  Private
+router.post('/clone/:id', auth, async (req, res) => {
+    try {
+        const originalRoadmap = await Roadmap.findById(req.params.id);
+        if (!originalRoadmap) {
+            return res.status(404).json({ msg: 'Roadmap not found' });
+        }
+
+        // Deep clone phases while resetting status
+        const clonedPhases = originalRoadmap.phases.map(phase => {
+            const phaseObj = phase.toObject ? phase.toObject() : JSON.parse(JSON.stringify(phase));
+            
+            return {
+                ...phaseObj,
+                topics: (phaseObj.topics || []).map(topic => ({
+                    ...topic,
+                    completed: false,
+                    timeSpent: 0,
+                    dueDate: null,
+                    completedAt: null
+                })),
+                handsOnProject: phaseObj.handsOnProject ? {
+                    ...phaseObj.handsOnProject,
+                    completed: false,
+                    solutionUrl: null,
+                    submittedAt: null
+                } : null
+            };
+        });
+
+        const newRoadmap = new Roadmap({
+            userId: req.user.id,
+            skill: originalRoadmap.skill,
+            description: originalRoadmap.description,
+            phases: clonedPhases,
+            capstoneProject: originalRoadmap.capstoneProject ? {
+                ...originalRoadmap.capstoneProject.toObject(),
+                completed: false,
+                solutionUrl: null,
+                submittedAt: null
+            } : null,
+            isCompleted: false
+        });
+
+        const roadmap = await newRoadmap.save();
+
+        // Log cloning
+        const log = new AuditLog({
+            userId: req.user.id,
+            action: 'ROADMAP_CLONE',
+            targetId: roadmap.id,
+            targetModel: 'Roadmap',
+            metadata: { 
+                originalRoadmapId: originalRoadmap.id,
+                skill: roadmap.skill 
+            }
+        });
+        await log.save();
+
+        // Award points for path discovery
+        await GamificationService.awardXP(req.user.id, 20, 'Path Discovered');
+
+        res.json(roadmap);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

@@ -47,7 +47,7 @@ router.post('/register', async (req, res) => {
             { expiresIn: '5d' },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
+                res.json({ token, user: userData(user) });
             }
         );
 
@@ -97,7 +97,7 @@ router.post('/login', async (req, res) => {
             { expiresIn: '5d' },
             (err, token) => {
                 if (err) throw err;
-                res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
+                res.json({ token, user: userData(user) });
             }
         );
 
@@ -105,6 +105,35 @@ router.post('/login', async (req, res) => {
         console.error(err.message);
         res.status(500).send('Server error');
     }
+});
+
+// @route   GET api/auth/me
+// @desc    Get current user
+// @access  Private
+router.get('/me', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        res.json(userData(user));
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// Helper to format user data
+const userData = (user) => ({
+    id: user.id,
+    name: user.name,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    isPublic: user.isPublic,
+    xp: user.xp,
+    level: user.level,
+    streak: user.streak,
+    totalPoints: user.totalPoints,
+    badges: user.badges,
+    lastActiveDate: user.lastActiveDate
 });
 
 // @route   PUT api/auth/profile
@@ -124,8 +153,7 @@ router.put('/profile', auth, async (req, res) => {
         if (isPublic !== undefined) user.isPublic = isPublic;
 
         await user.save();
-
-        res.json({ user: { id: user.id, name: user.name, username: user.username, email: user.email, isPublic: user.isPublic, role: user.role } });
+        res.json({ user: userData(user) });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');

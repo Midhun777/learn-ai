@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
-import { LayoutDashboard, BookOpen, Award, Settings, LogOut, User, Box, ChevronRight, Shield, FileText, Briefcase } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Award, Settings, LogOut, User, Box, ChevronRight, Shield, FileText, Briefcase, MessageSquare, Trophy } from 'lucide-react';
 
 const Sidebar = () => {
     const { user, logout } = useContext(AuthContext);
@@ -11,18 +11,28 @@ const Sidebar = () => {
     const isActive = (path) => location.pathname === path;
 
     const baseNavItems = [
-        { icon: LayoutDashboard, label: 'Overview', path: '/dashboard' },
-        { icon: BookOpen, label: 'Roadmaps', path: '/dashboard' },
-        { icon: FileText, label: 'Career Vault', path: '/career/resume' },
-        { icon: Briefcase, label: 'Career Paths', path: '/career-recommendation' },
-        { icon: Award, label: 'Achievements', path: '/dashboard' },
+        { icon: LayoutDashboard, label: 'My Dashboard', path: '/dashboard' },
+        { icon: BookOpen, label: 'Learning Paths', path: '/dashboard' },
+        { icon: MessageSquare, label: 'Community', path: '/community' },
+        { icon: FileText, label: 'Saved Profile', path: '/career/resume' },
+        { icon: Briefcase, label: 'Suggestions', path: '/career-recommendation' },
+        { icon: Trophy, label: 'Top Learners', path: '/leaderboard' },
+        { icon: Award, label: 'Badges', path: '/dashboard' },
     ];
+
+    const mentorNavItems = (user?.role === 'mentor' || user?.role === 'admin') ? [
+        { icon: Shield, label: 'Mentor Console', path: '/mentor/dashboard' }
+    ] : [];
 
     const adminNavItems = user?.role === 'admin' ? [
         { icon: Shield, label: 'Admin Console', path: '/admin/dashboard' }
     ] : [];
 
-    const navItems = [...baseNavItems, ...adminNavItems];
+    const userMessagesItem = [
+        { icon: MessageSquare, label: 'Messages', path: '/messages' }
+    ];
+
+    const navItems = [...baseNavItems, ...userMessagesItem, ...mentorNavItems, ...adminNavItems];
 
     if (!user) return null;
 
@@ -68,10 +78,15 @@ const Sidebar = () => {
                         <User className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900 truncate">
-                            {user?.username}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">Pro Plan</p>
+                        <div className="flex items-center gap-1.5">
+                            <p className="text-sm font-semibold text-gray-900 truncate">
+                                {user?.username}
+                            </p>
+                            <span className="text-[10px] font-bold bg-brand-primary/10 text-brand-primary px-1.5 py-0.5 rounded-full">
+                                Level {user?.level || 1}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 truncate">{user?.xp || 0} Points earned</p>
                     </div>
                 </div>
             </div>
@@ -83,7 +98,7 @@ const Sidebar = () => {
                     className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors duration-150"
                 >
                     <LogOut className="w-4 h-4" />
-                    Log out
+                    Sign out
                 </button>
             </div>
         </aside>

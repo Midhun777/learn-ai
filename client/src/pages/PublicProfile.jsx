@@ -1,28 +1,45 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Award, BookOpen, User, Trophy, Target, Sparkles, Shield, ArrowLeft, ChevronRight, Share2, ExternalLink } from 'lucide-react';
+import { Award, BookOpen, User, Trophy, Target, Sparkles, Shield, ArrowLeft, ChevronRight, Share2, ExternalLink, Plus } from 'lucide-react';
 
 const PublicProfile = () => {
-    const { id } = useParams();
+    const { username } = useParams();
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [cloningId, setCloningId] = useState(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/public/profile/${id}`);
+                const res = await axios.get(`http://localhost:5000/api/public/profile/${username}`);
                 setProfile(res.data);
             } catch (err) {
-                setError("SCHEMATIC_LOCKED_OR_INVALID.");
+                setError("This profile is not available or private.");
             } finally {
                 setLoading(false);
             }
         };
         fetchProfile();
-    }, [id]);
+    }, [username]);
+
+    const handleClonePath = async (roadmapId) => {
+        setCloningId(roadmapId);
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`http://localhost:5000/api/roadmap/clone/${roadmapId}`, {}, {
+                headers: { 'x-auth-token': token }
+            });
+            alert("Learning path added to your dashboard!");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to add path. You might already have it or there was a server error.");
+        } finally {
+            setCloningId(null);
+        }
+    };
 
     if (loading) return (
         <div className="min-h-screen bg-ui-bg flex items-center justify-center">
@@ -36,13 +53,13 @@ const PublicProfile = () => {
                 <div className="w-20 h-20 bg-rose-50 text-rose-500 border border-rose-100 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-soft">
                     <Shield className="w-10 h-10" />
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight mb-3">LOCKED_RECORD</h2>
+                <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight mb-3">Locked Profile</h2>
                 <p className="text-sm font-medium text-slate-500 mb-8 lowercase tracking-wide italic">{error}</p>
                 <button
                     onClick={() => navigate('/')}
                     className="btn-primary w-full py-4 text-sm uppercase font-bold tracking-widest"
                 >
-                    Return to Entry
+                    Go Back Home
                 </button>
             </div>
         </div>
@@ -67,7 +84,7 @@ const PublicProfile = () => {
                         Exit View
                     </button>
                     <div className="flex items-center gap-3 bg-white/50 backdrop-blur px-4 py-2 rounded-pill border border-white/20 shadow-soft">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Public Matrix</span>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Profile Status</span>
                         <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-glow"></div>
                     </div>
                 </div>
@@ -89,13 +106,13 @@ const PublicProfile = () => {
                         </h1>
 
                         <div className="flex flex-wrap justify-center gap-3 mb-10">
-                            <span className="badge-primary">ELITE_SCHOLAR</span>
-                            <span className="badge-success">SYSTEM_ARCHITECT</span>
+                            <span className="badge-primary">Dedicated Learner</span>
+                            <span className="badge-success">Community Member</span>
                         </div>
 
                         <div className="max-w-2xl mx-auto px-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100">
                             <p className="text-lg font-medium text-slate-500 uppercase leading-relaxed tracking-tight italic">
-                                "Dedicated to systematic mastery through architected AI roadmaps and collaborative engineering."
+                                "Passionate about learning and mastering new skills through AI-powered paths."
                             </p>
                         </div>
                     </div>
@@ -104,9 +121,9 @@ const PublicProfile = () => {
                 {/* Statistics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
                     {[
-                        { label: 'MASTERY_UNITS', value: stats.completedCount, icon: Trophy, color: 'text-brand-primary', bg: 'bg-brand-primary/5' },
-                        { label: 'ACTIVE_SCHEMATICS', value: stats.totalCount, icon: Target, color: 'text-brand-secondary', bg: 'bg-brand-secondary/5' },
-                        { label: 'VALIDATIONS', value: stats.completedCount, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-50/5' }
+                        { label: 'COMPLETED PATHS', value: stats.completedCount, icon: Trophy, color: 'text-brand-primary', bg: 'bg-brand-primary/5' },
+                        { label: 'ACTIVE PATHS', value: stats.totalCount, icon: Target, color: 'text-brand-secondary', bg: 'bg-brand-secondary/5' },
+                        { label: 'BADGES EARNED', value: stats.completedCount, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-50/5' }
                     ].map((s, i) => (
                         <div key={i} className="saas-card p-8 flex flex-col items-center justify-center text-center">
                             <div className={`w-14 h-14 ${s.bg} ${s.color} rounded-2xl flex items-center justify-center mb-6 border border-white/50 shadow-soft`}>
@@ -120,7 +137,7 @@ const PublicProfile = () => {
 
                 {/* Roadmap Records Header */}
                 <div className="mb-8 flex items-center gap-6">
-                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight shrink-0">Public Records</h2>
+                    <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tight shrink-0">Learning Paths</h2>
                     <div className="h-[2px] w-full bg-gradient-to-r from-slate-200 to-transparent rounded-full"></div>
                 </div>
 
@@ -138,8 +155,23 @@ const PublicProfile = () => {
                                     </div>
                                     <div className="flex flex-col items-end gap-2">
                                         <span className={roadmap.isCompleted ? 'badge-success' : 'badge-primary'}>
-                                            {roadmap.isCompleted ? 'VALIDATED' : 'IN_PROGRESS'}
+                                            {roadmap.isCompleted ? 'COMPLETED' : 'IN PROGRESS'}
                                         </span>
+                                        <button 
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleClonePath(roadmap._id);
+                                            }}
+                                            disabled={cloningId === roadmap._id}
+                                            className="flex items-center gap-2 px-3 py-1.5 bg-brand-primary/10 text-brand-primary hover:bg-brand-primary hover:text-white rounded-lg text-[10px] font-bold transition-all border border-brand-primary/20 disabled:opacity-50"
+                                        >
+                                            {cloningId === roadmap._id ? (
+                                                <div className="w-3 h-3 border-2 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+                                            ) : (
+                                                <Plus className="w-3 h-3" />
+                                            )}
+                                            {cloningId === roadmap._id ? 'ADDING...' : 'ADD TO MY PATH'}
+                                        </button>
                                     </div>
                                 </div>
 
@@ -149,7 +181,7 @@ const PublicProfile = () => {
 
                                 <div className="space-y-3 relative z-10">
                                     <div className="flex justify-between items-end">
-                                        <span className="text-[10px] font-bold text-ui-muted uppercase tracking-[0.2em]">Matrix Completion</span>
+                                        <span className="text-[10px] font-bold text-ui-muted uppercase tracking-[0.2em]">Completion Progress</span>
                                         <span className="text-sm font-black text-brand-primary tracking-tighter">{roadmap.isCompleted ? '100' : '35'}%</span>
                                     </div>
                                     <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/40">

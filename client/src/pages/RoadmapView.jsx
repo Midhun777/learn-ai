@@ -12,6 +12,10 @@ const RoadmapView = () => {
     const [loading, setLoading] = useState(true);
     const [showCert, setShowCert] = useState(false);
     const [isGuided, setIsGuided] = useState(true);
+    const [projectModalOpen, setProjectModalOpen] = useState(false);
+    const [projectPhaseIndex, setProjectPhaseIndex] = useState(null);
+    const [solutionInput, setSolutionInput] = useState('');
+    const [submittingProject, setSubmittingProject] = useState(false);
     const navigate = useNavigate();
     const { user } = useContext(AuthContext);
 
@@ -49,10 +53,28 @@ const RoadmapView = () => {
         }
     };
 
+    const handleProjectSubmit = async (e) => {
+        e.preventDefault();
+        if (!solutionInput.trim()) return;
+        setSubmittingProject(true);
+        try {
+            const res = await axios.put(`http://localhost:5000/api/roadmap/${id}/phase/${projectPhaseIndex}/project`, {
+                solutionUrl: solutionInput.trim()
+            });
+            setRoadmap(res.data);
+            setProjectModalOpen(false);
+            setSolutionInput('');
+        } catch (err) {
+            console.error('Failed to submit project:', err);
+        } finally {
+            setSubmittingProject(false);
+        }
+    };
+
     if (loading) return <LoadingScreen />;
     if (!roadmap) return (
         <div className="p-12 text-center text-gray-500 font-medium tracking-wide animate-fade-in min-h-screen flex items-center justify-center bg-gray-50">
-            Roadmap not found or unavailable.
+            Path not found or unavailable.
         </div>
     );
 
@@ -131,7 +153,7 @@ const RoadmapView = () => {
 
                         {/* Index */}
                         <div className="saas-card p-6 hidden lg:block">
-                            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-widest mb-4">Curriculum</h4>
+                            <h4 className="text-xs font-semibold text-gray-900 uppercase tracking-widest mb-4">What you'll learn</h4>
                             <div className="space-y-2">
                                 {roadmap.phases.map((p, i) => {
                                     const pProg = Math.round((p.topics.filter(t => t.completed).length / p.topics.length) * 100);
@@ -162,7 +184,7 @@ const RoadmapView = () => {
                                 {roadmap.skill}
                             </h1>
                             <p className="text-lg text-gray-500 leading-relaxed max-w-2xl">
-                                {roadmap.description || `Optimized learning path for mastering ${roadmap.skill}. Follow the sequential progression to build your expertise.`}
+                                {roadmap.description || `A simple, step-by-step path to master ${roadmap.skill}. Follow along and build your skills.`}
                             </p>
                         </div>
 
@@ -177,7 +199,7 @@ const RoadmapView = () => {
                                         </h2>
                                         <p className="text-sm font-medium text-gray-500 flex items-center gap-2">
                                             <Clock className="w-4 h-4" />
-                                            {phase.estimatedTime || 'Standard Duration'}
+                                            Approx. {phase.estimatedTime || 'Self-paced'}
                                         </p>
                                     </div>
 
@@ -203,7 +225,7 @@ const RoadmapView = () => {
                                                                 {isActiveNode && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-brand-primary/10 text-brand-primary uppercase tracking-widest">Active</span>}
                                                             </div>
                                                             <h4 className="text-lg font-bold text-gray-900">{topic.title || topic.name}</h4>
-                                                            <p className="text-sm text-gray-600 leading-relaxed max-w-xl">{topic.description || "Detailed exploration of this core topic."}</p>
+                                                            <p className="text-sm text-gray-600 leading-relaxed max-w-xl">{topic.description || "Learn the basics of this section."}</p>
 
                                                             {topic.resources?.length > 0 && (
                                                                 <div className="flex flex-wrap gap-2 pt-3">
@@ -211,7 +233,7 @@ const RoadmapView = () => {
                                                                         <a key={rIdx} href={res.url} target="_blank" rel="noopener noreferrer"
                                                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-md text-xs font-medium text-gray-600 hover:text-gray-900 hover:border-gray-300 transition-colors shadow-sm">
                                                                             <ExternalLink className="w-3 h-3" />
-                                                                            {res.type || res.name || 'Resource'}
+                                                                            {res.type || res.name || 'Lesson Link'}
                                                                         </a>
                                                                     ))}
                                                                 </div>
@@ -238,22 +260,52 @@ const RoadmapView = () => {
 
                                     {/* Project Card */}
                                     {phase.handsOnProject && (
-                                        <div className="mt-6 saas-card bg-gray-900 border-none p-8 text-white">
-                                            <div className="flex items-start gap-4 mb-4">
-                                                <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center shrink-0">
-                                                    <LayoutTemplate className="w-5 h-5 text-white" />
+                                        <div className="mt-6 saas-card bg-gray-900 border-none p-8 text-white relative overflow-hidden">
+                                            {phase.handsOnProject.completed && (
+                                                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-bl-full pointer-events-none"></div>
+                                            )}
+                                            <div className="flex items-start gap-4 mb-4 relative z-10">
+                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${phase.handsOnProject.completed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white'}`}>
+                                                    {phase.handsOnProject.completed ? <CheckCircle className="w-5 h-5" /> : <LayoutTemplate className="w-5 h-5" />}
                                                 </div>
                                                 <div>
-                                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Phase Project</span>
+                                                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Practice Project</span>
                                                     <h4 className="text-xl font-bold tracking-tight">{phase.handsOnProject.title}</h4>
                                                 </div>
                                             </div>
-                                            <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                                            <p className="text-gray-300 text-sm leading-relaxed mb-6 block w-full relative z-10">
                                                 {phase.handsOnProject.description}
                                             </p>
-                                            <button className="px-5 py-2.5 bg-white text-gray-900 rounded-md text-sm font-bold shadow-sm hover:bg-gray-100 transition-colors">
-                                                Start Project
-                                            </button>
+                                            
+                                            {phase.handsOnProject.completed ? (
+                                                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 relative z-10">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wide flex items-center gap-1">
+                                                            <CheckCircle className="w-3 h-3" /> Submitted
+                                                        </span>
+                                                        {phase.handsOnProject.submittedAt && (
+                                                            <span className="text-xs text-gray-400">
+                                                                {new Date(phase.handsOnProject.submittedAt).toLocaleDateString()}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {phase.handsOnProject.solutionUrl && (
+                                                        <a href={phase.handsOnProject.solutionUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-brand-primary hover:text-brand-primary/80 transition-colors w-fit">
+                                                            <ExternalLink className="w-4 h-4" /> View My Work
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => {
+                                                        setProjectPhaseIndex(pIdx);
+                                                        setProjectModalOpen(true);
+                                                    }}
+                                                    className="px-5 py-2.5 bg-white text-gray-900 rounded-md text-sm font-bold shadow-sm hover:bg-gray-100 transition-colors relative z-10"
+                                                >
+                                                    Start Project
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                 </section>
@@ -283,7 +335,7 @@ const RoadmapView = () => {
                                 {user?.name || user?.username}
                             </h3>
 
-                            <p className="text-gray-500 mb-4">has successfully completed the learning path</p>
+                            <p className="text-gray-500 mb-4">has successfully finished this path:</p>
 
                             <h4 className="text-2xl font-bold text-gray-900 mb-16">{roadmap.skill}</h4>
 
@@ -299,6 +351,42 @@ const RoadmapView = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Project Submission Modal */}
+            {projectModalOpen && (
+                <div className="fixed inset-0 z-[150] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden scale-100 transition-transform">
+                        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-900">Submit Your Project</h3>
+                            <button onClick={() => setProjectModalOpen(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleProjectSubmit} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Solution URL</label>
+                                <input
+                                    type="url"
+                                    required
+                                    placeholder="e.g., https://github.com/username/project"
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none transition-all"
+                                    value={solutionInput}
+                                    onChange={(e) => setSolutionInput(e.target.value)}
+                                />
+                                <p className="text-xs text-gray-500 mt-2">Paste a link to your GitHub repository, live demo, or CodePen where your completed project can be viewed.</p>
+                            </div>
+                            <div className="pt-4 flex items-center justify-end gap-3">
+                                <button type="button" onClick={() => setProjectModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" disabled={submittingProject} className="px-4 py-2 bg-brand-primary text-white text-sm font-bold rounded-md hover:bg-gray-900 transition-colors shadow-sm disabled:opacity-70 flex items-center gap-2">
+                                    {submittingProject ? 'Submitting...' : 'Finish Project'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}

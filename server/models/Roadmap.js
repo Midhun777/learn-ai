@@ -59,6 +59,12 @@ const RoadmapSchema = new mongoose.Schema({
                 completed: {
                     type: Boolean,
                     default: false
+                },
+                solutionUrl: {
+                    type: String
+                },
+                submittedAt: {
+                    type: Date
                 }
             }
         }
@@ -69,6 +75,12 @@ const RoadmapSchema = new mongoose.Schema({
         completed: {
             type: Boolean,
             default: false
+        },
+        solutionUrl: {
+            type: String
+        },
+        submittedAt: {
+            type: Date
         }
     },
     isCompleted: {

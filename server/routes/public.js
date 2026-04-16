@@ -3,43 +3,41 @@ const router = express.Router();
 const User = require('../models/UserModel');
 const Roadmap = require('../models/Roadmap');
 
-// @route   GET api/public/profile/:id
-// @desc    Get public profile by User ID
+// @route   GET api/public/profile/:username
+// @desc    Get public profile by Username
 // @access  Public
-router.get('/profile/:id', async (req, res) => {
+router.get('/profile/:username', async (req, res) => {
     try {
-        // Fetch User (exclude password and email for privacy)
-        const user = await User.findById(req.params.id).select('-password -email');
+        // Fetch User and check privacy
+        const user = await User.findOne({ username: req.params.username }).select('-password -email');
+        
         if (!user) {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        // Fetch Completed Roadmaps
-        // We can just fetch all and let frontend decide, or just completed.
-        // Let's fetch all so we can show "Currently Learning" too if we want later.
-        const roadmaps = await Roadmap.find({ userId: req.params.id }).sort({ createdAt: -1 });
+        // Enforcement: If profile is not public, return error
+        if (!user.isPublic) {
+            return res.status(403).json({ msg: 'This profile is private' });
+        }
 
-        // Calculate Stats
-        const completedRoadmaps = roadmaps.filter(r => r.isCompleted);
-        const totalSkills = roadmaps.length;
+        // Fetch User Roadmaps (Learning Paths)
+        const roadmaps = await Roadmap.find({ userId: user._id }).sort({ createdAt: -1 });
 
-        // Response
+        // Calculate simplified stats
+        const completedCount = roadmaps.filter(r => r.isCompleted).length;
+
         res.json({
             user,
             stats: {
                 joined: user.createdAt,
-                completedCount: completedRoadmaps.length,
-                totalCount: totalSkills,
-                topSkills: completedRoadmaps.map(r => r.skill).slice(0, 3)
+                completedCount,
+                totalCount: roadmaps.length
             },
-            roadmaps: roadmaps // Sending all for now, frontend can filter
+            roadmaps: roadmaps
         });
 
     } catch (err) {
         console.error(err.message);
-        if (err.kind === 'ObjectId') {
-            return res.status(404).json({ msg: 'User not found' });
-        }
         res.status(500).send('Server Error');
     }
 });

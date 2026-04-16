@@ -4,9 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
 import { Plus, BookOpen, Target, Search, X, Layers, Activity, ShieldCheck, Trash2, ArrowRight } from 'lucide-react';
+import ExperienceCard from '../components/ExperienceCard';
 
 const Dashboard = () => {
-    const { user } = useContext(AuthContext);
+    const { user, refreshUser } = useContext(AuthContext);
     const [roadmaps, setRoadmaps] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -42,6 +43,10 @@ const Dashboard = () => {
             }
         };
         fetchRoadmaps();
+    }, []);
+
+    useEffect(() => {
+        refreshUser();
     }, []);
 
     const [filterState, setFilterState] = useState('total');
@@ -99,14 +104,31 @@ const Dashboard = () => {
         <div className="min-h-screen bg-ui-bg">
             <main className="max-w-6xl mx-auto p-6 lg:p-12 animate-fade-in pb-24">
 
+                {/* Experience & Stats Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                    <div className="lg:col-span-2">
+                        <ExperienceCard user={user} />
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl border border-gray-100 flex flex-col justify-center animate-fade-in shadow-sm">
+                        <div className="flex items-center gap-2 mb-4">
+                            <Activity className="w-5 h-5 text-brand-primary" />
+                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">My Progress</h3>
+                        </div>
+                        <p className="text-sm text-gray-500 mb-4 font-medium">Complete 2 more lessons today to keep your <span className="text-orange-600 font-bold">{user?.streak || 0} day streak</span> alive!</p>
+                        <Link to="/leaderboard" className="mt-auto flex items-center gap-2 text-xs font-bold text-brand-primary hover:text-indigo-700 transition-colors group">
+                            View Leaderboard <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
+                    </div>
+                </div>
+
                 {/* Dashboard Header */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
                     <div className="space-y-2">
                         <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                            Overview
+                            My Dashboard
                         </h1>
                         <p className="text-gray-500 font-medium max-w-lg">
-                            Track your learning progress and manage your personalized roadmaps.
+                            Track your progress and manage your personalized learning paths.
                         </p>
                     </div>
 
@@ -116,7 +138,7 @@ const Dashboard = () => {
                             className="btn-primary shadow-sm rounded-md"
                         >
                             <Plus className="w-4 h-4" />
-                            <span>Create Roadmap</span>
+                            <span>New Learning Path</span>
                         </button>
                     </div>
                 </div>
@@ -150,7 +172,7 @@ const Dashboard = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search learning paths..."
+                            placeholder="Search your learning paths..."
                             className="w-full pl-12 pr-14 h-14 bg-white text-gray-900 text-base border border-gray-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all placeholder:text-gray-400"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -198,7 +220,7 @@ const Dashboard = () => {
                                     </div>
 
                                     <h3 className="text-lg font-bold text-gray-900 mb-1 truncate">{roadmap.skill}</h3>
-                                    <p className="text-sm text-gray-500 mb-6 flex-1">{roadmap.phases.length} Phases • {total} Topics</p>
+                                    <p className="text-sm text-gray-500 mb-6 flex-1">{roadmap.phases.length} Steps • {total} Lessons</p>
 
                                     <div className="space-y-2 mt-auto">
                                         <div className="flex justify-between items-center text-sm font-medium">
@@ -221,13 +243,13 @@ const Dashboard = () => {
                         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-gray-400 shadow-sm mb-6 border border-gray-100">
                             <Target className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">No roadmaps found</h3>
-                        <p className="text-gray-500 max-w-sm mb-6">You haven't generated any learning paths yet or none match your search criteria.</p>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">No learning paths found</h3>
+                        <p className="text-gray-500 max-w-sm mb-6">You haven't created any learning paths yet.</p>
                         <button
                             onClick={() => setShowModal(true)}
                             className="btn-primary shadow-sm rounded-md"
                         >
-                            Create your first roadmap
+                            Create your first path
                         </button>
                     </div>
                 )}
@@ -240,8 +262,8 @@ const Dashboard = () => {
 
                         <div className="flex justify-between items-center p-6 border-b border-gray-100">
                             <div>
-                                <h2 className="text-lg font-bold text-gray-900">New Roadmap</h2>
-                                <p className="text-sm text-gray-500">Generate a custom learning path with AI.</p>
+                                <h2 className="text-lg font-bold text-gray-900">New Learning Path</h2>
+                                <p className="text-sm text-gray-500">Our AI will create a step-by-step guide for you.</p>
                             </div>
                             <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-md transition-colors">
                                 <X className="w-5 h-5" />
@@ -278,24 +300,24 @@ const Dashboard = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Learning Goal</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">My Goal</label>
                                     <select
                                         className="m-input h-11 border-gray-200 bg-white"
                                         value={learningGoal}
                                         onChange={(e) => setLearningGoal(e.target.value)}
                                         disabled={generating}
                                     >
-                                        <option value="job preparation">Job Preparation</option>
+                                        <option value="job preparation">Get a Job</option>
                                         <option value="projects">Build Projects</option>
-                                        <option value="academic learning">Academic Learning</option>
-                                        <option value="general knowledge">General Knowledge</option>
+                                        <option value="academic learning">School / College</option>
+                                        <option value="general knowledge">Just Curious</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Deadline (Days)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Finish in (Days)</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -308,7 +330,7 @@ const Dashboard = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Daily Study (Hours)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Study Time (Hours)</label>
                                     <input
                                         type="number"
                                         min="0.5"
@@ -340,11 +362,11 @@ const Dashboard = () => {
                                     {generating ? (
                                         <>
                                             <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
-                                            Generating...
+                                            Creating Path...
                                         </>
                                     ) : (
                                         <>
-                                            Generate Roadmap
+                                            Create Learning Path
                                             <ArrowRight className="w-4 h-4 ml-1" />
                                         </>
                                     )}

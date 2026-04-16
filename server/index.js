@@ -17,6 +17,9 @@ app.use('/api/roadmap', require('./routes/roadmap'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/public', require('./routes/public'));
 app.use('/api/career', require('./routes/career'));
+app.use('/api/mentor', require('./routes/mentor'));
+app.use('/api/gamification', require('./routes/gamification'));
+app.use('/api/community', require('./routes/community'));
 
 const PORT = process.env.PORT || 5000;
 

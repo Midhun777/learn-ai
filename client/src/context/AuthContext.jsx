@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { triggerLevelUpConfetti } from '../utils/confetti';
 
 const AuthContext = createContext();
 const API_URL = 'http://localhost:5000/api';
@@ -14,18 +15,14 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 axios.defaults.headers.common['x-auth-token'] = token;
                 try {
-                    // Since we don't have a /me endpoint yet, we'll just decode or persist from handling
-                    // For now, let's just assume valid if token exists, or decode if we had a library
-                    // Better: Let's add a rudimentary check or just wait for the user object from login
-                    // Real-world: Call /api/auth/me. For now, rely on stored user or login response.
-
-                    // Actually, let's just create a dummy "me" endpoint or store user in localstorage too
-                    const storedUser = localStorage.getItem('user');
-                    if (storedUser) {
-                        setUser(JSON.parse(storedUser));
-                    }
+                    const res = await axios.get(`${API_URL}/auth/me`);
+                    setUser(res.data);
+                    localStorage.setItem('user', JSON.stringify(res.data));
                 } catch (error) {
                     localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    delete axios.defaults.headers.common['x-auth-token'];
+                    setUser(null);
                 }
             }
             setLoading(false);
@@ -51,17 +48,35 @@ export const AuthProvider = ({ children }) => {
         };
     }, []);
 
+    const refreshUser = async () => {
+        try {
+            const res = await axios.get(`${API_URL}/auth/me`);
+            const newData = res.data;
+            
+            // Check for level up celebration
+            if (user && newData.level > user.level) {
+                triggerLevelUpConfetti();
+            }
+
+            setUser(newData);
+            localStorage.setItem('user', JSON.stringify(newData));
+            return newData;
+        } catch (error) {
+            console.error('Failed to refresh user:', error);
+        }
+    };
+
     const register = async (name, username, email, password) => {
         try {
             const res = await axios.post(`${API_URL}/auth/register`, { name, username, email, password });
             const { token, user: userData } = res.data;
             localStorage.setItem('token', token);
-            localStorage.setItem('user', JSON.stringify(userData)); // Simple user persistence
+            localStorage.setItem('user', JSON.stringify(userData));
             axios.defaults.headers.common['x-auth-token'] = token;
             setUser(userData);
         } catch (error) {
             console.error('Registration failed:', error.response ? error.response.data : error.message);
-            throw error; // Re-throw to allow component to handle
+            throw error;
         }
     };
 
@@ -99,7 +114,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, register, login, logout, updateUser, loading }}>
+        <AuthContext.Provider value={{ user, register, login, logout, updateUser, refreshUser, loading }}>
             {children}
         </AuthContext.Provider>
     );
