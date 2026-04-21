@@ -122,14 +122,16 @@ const PublicProfile = () => {
                     {[
                         { label: 'COMPLETED PATHS', value: stats.completedCount, icon: Trophy, color: 'text-brand-primary', bg: 'bg-brand-primary/5' },
                         { label: 'ACTIVE PATHS', value: stats.totalCount, icon: Target, color: 'text-brand-secondary', bg: 'bg-brand-secondary/5' },
-                        { label: 'CERTIFICATES & BADGES', value: stats.completedCount, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-50/5' }
+                        { label: 'CERTIFICATES', value: stats.completedCount, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-50/5' }
                     ].map((s, i) => (
-                        <div key={i} className="saas-card p-6 flex flex-col items-center justify-center text-center hover:-translate-y-1 transition-transform">
-                            <div className={`w-12 h-12 ${s.bg} ${s.color} rounded-2xl flex items-center justify-center mb-4 border border-white/50 shadow-soft`}>
-                                <s.icon className="w-6 h-6" />
+                        <div key={i} className="saas-card p-6 flex flex-col items-center justify-between text-center hover:-translate-y-1 transition-transform h-full">
+                            <div className="flex flex-col items-center">
+                                <div className={`w-12 h-12 ${s.bg} ${s.color} rounded-2xl flex items-center justify-center mb-4 border border-white/50 shadow-soft`}>
+                                    <s.icon className="w-6 h-6" />
+                                </div>
+                                <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-3 text-slate-400 italic line-clamp-1">{s.label}</p>
                             </div>
-                            <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1 text-slate-400 italic">{s.label}</p>
-                            <p className="text-4xl font-black tracking-tighter text-slate-900">{s.value}</p>
+                            <p className="text-4xl font-black tracking-tighter text-slate-900 mt-auto">{s.value}</p>
                         </div>
                     ))}
                 </div>
