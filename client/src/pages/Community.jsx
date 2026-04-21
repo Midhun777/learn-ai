@@ -2,7 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
-import { Heart, MessageCircle, Send, User, Sparkles, MessageSquare, Edit2, Trash2, X, Check } from 'lucide-react';
+import { Heart, MessageCircle, Send, Sparkles, MessageSquare, Edit2, Trash2, X, Check } from 'lucide-react';
+import Avatar from '../components/Avatar';
 import { formatDistanceToNow } from 'date-fns';
 
 const Community = () => {
@@ -110,9 +111,7 @@ const Community = () => {
                 <div className="saas-card p-6 mb-12 border-brand-primary/10 shadow-premium bg-gradient-to-br from-white to-indigo-50/20">
                     <form onSubmit={handleCreatePost}>
                         <div className="flex gap-4">
-                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 shrink-0 border border-gray-200">
-                                <User className="w-6 h-6" />
-                            </div>
+                            <Avatar user={user} size="10" />
                             <div className="flex-1 space-y-4">
                                 <textarea
                                     className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder:text-gray-400 resize-none min-h-[80px]"
@@ -141,9 +140,7 @@ const Community = () => {
                         posts.map(post => (
                             <article key={post._id} className="saas-card bg-white p-6 md:p-8 hover:border-gray-300 transition-all duration-300 relative group">
                                 <div className="flex gap-4 mb-6">
-                                    <div className="w-12 h-12 rounded-[18px] bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-500 shadow-sm shrink-0 overflow-hidden">
-                                        <User className="w-6 h-6" />
-                                    </div>
+                                    <Avatar user={post.user} size="12" />
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center justify-between">
                                             <div>
@@ -235,9 +232,7 @@ const Community = () => {
                                         <div className="space-y-4 pt-4">
                                             {post.comments.map((comment, cIndex) => (
                                                 <div key={cIndex} className="flex gap-3 bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
-                                                    <div className="w-8 h-8 rounded-full bg-white border border-gray-100 flex items-center justify-center text-gray-400 shrink-0">
-                                                        <User className="w-4 h-4" />
-                                                    </div>
+                                                    <Avatar user={comment.user} size="8" />
                                                     <div>
                                                         <p className="text-xs font-bold text-gray-900 mb-1">
                                                             @{comment.user?.username || 'anonymous'}
@@ -253,9 +248,7 @@ const Community = () => {
 
                                     {/* Add Comment Input */}
                                     <div className="flex gap-3 pt-4">
-                                        <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
-                                            <User className="w-4 h-4" />
-                                        </div>
+                                        <Avatar user={user} size="8" />
                                         <div className="flex-1 relative">
                                             <input
                                                 type="text"

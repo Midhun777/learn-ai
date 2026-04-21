@@ -47,9 +47,9 @@ router.get('/user/:userId/progress', [auth, mentor], async (req, res) => {
 });
 
 // @route   POST api/mentor/message
-// @desc    Send guidance message to a user
-// @access  Mentor/Admin
-router.post('/message', [auth, mentor], async (req, res) => {
+// @desc    Send guidance message to a user/mentor
+// @access  Private
+router.post('/message', auth, async (req, res) => {
     try {
         const { recipientId, content } = req.body;
 
@@ -73,8 +73,8 @@ router.post('/message', [auth, mentor], async (req, res) => {
 
 // @route   GET api/mentor/messages/:userId
 // @desc    Get message history between mentor and user
-// @access  Mentor/Admin
-router.get('/messages/:userId', [auth, mentor], async (req, res) => {
+// @access  Private
+router.get('/messages/:userId', auth, async (req, res) => {
     try {
         const messages = await Message.find({
             $or: [
@@ -94,8 +94,11 @@ router.get('/messages/:userId', [auth, mentor], async (req, res) => {
 // @access  Private (User)
 router.get('/my-messages', auth, async (req, res) => {
     try {
-        const messages = await Message.find({ recipient: req.user.id })
+        const messages = await Message.find({ 
+            $or: [{ recipient: req.user.id }, { sender: req.user.id }] 
+        })
             .populate('sender', 'name username role')
+            .populate('recipient', 'name username role')
             .sort({ createdAt: -1 });
         res.json(messages);
     } catch (err) {
@@ -147,6 +150,60 @@ router.post('/sync-progress/:userId', auth, async (req, res) => {
         }));
 
         res.json(syncResults);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   GET api/mentor/pending-projects
+// @desc    Get all roadmaps with pending projects
+// @access  Mentor/Admin
+router.get('/pending-projects', [auth, mentor], async (req, res) => {
+    try {
+        const roadmaps = await Roadmap.find({
+            $or: [
+                { 'phases.handsOnProject.status': 'Pending', 'phases.handsOnProject.solutionUrl': { $ne: null } },
+                { 'capstoneProject.status': 'Pending', 'capstoneProject.solutionUrl': { $ne: null } }
+            ]
+        }).populate('userId', 'username email').sort({ updatedAt: -1 });
+
+        res.json(roadmaps);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/mentor/roadmaps/:id/approve-project
+// @desc    Approve or reject a submitted project
+// @access  Mentor/Admin
+router.put('/roadmaps/:id/approve-project', [auth, mentor], async (req, res) => {
+    try {
+        const { phaseIndex, action, isCapstone } = req.body; // action: 'Approve' | 'Reject'
+        const roadmap = await Roadmap.findById(req.params.id);
+        if (!roadmap) return res.status(404).json({ msg: 'Roadmap not found' });
+
+        const statusLabel = action === 'Approve' ? 'Approved' : 'Rejected';
+        const isCompletedNow = action === 'Approve';
+
+        if (isCapstone) {
+            if (roadmap.capstoneProject) {
+                roadmap.capstoneProject.status = statusLabel;
+                roadmap.capstoneProject.completed = isCompletedNow;
+            }
+        } else if (phaseIndex !== undefined && roadmap.phases[phaseIndex]) {
+            if (roadmap.phases[phaseIndex].handsOnProject) {
+                roadmap.phases[phaseIndex].handsOnProject.status = statusLabel;
+                roadmap.phases[phaseIndex].handsOnProject.completed = isCompletedNow;
+            }
+        }
+
+        roadmap.markModified('phases');
+        if (isCapstone) roadmap.markModified('capstoneProject');
+        await roadmap.save();
+
+        res.json(roadmap);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

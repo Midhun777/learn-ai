@@ -182,6 +182,13 @@ const CareerRecommendation = () => {
                                                         </span>
                                                     </div>
                                                 </div>
+                                                <button 
+                                                    className="btn-primary shrink-0 text-sm px-5 py-2 shadow-sm flex items-center gap-2 transform active:scale-95 transition-all"
+                                                    onClick={() => alert(`Application process initiated for ${rec.role}. Application portal coming soon!`)}
+                                                >
+                                                    <Briefcase className="w-4 h-4" />
+                                                    Apply Now
+                                                </button>
                                             </div>
                                             
                                             <p className="text-gray-600 text-sm leading-relaxed mb-5">

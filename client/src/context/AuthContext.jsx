@@ -113,8 +113,18 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
     };
 
+    const deleteAccount = async () => {
+        try {
+            await axios.delete(`${API_URL}/auth/account`);
+            logout();
+        } catch (error) {
+            console.error('Delete account failed:', error.response ? error.response.data : error.message);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, register, login, logout, updateUser, refreshUser, loading }}>
+        <AuthContext.Provider value={{ user, register, login, logout, updateUser, deleteAccount, refreshUser, loading }}>
             {children}
         </AuthContext.Provider>
     );

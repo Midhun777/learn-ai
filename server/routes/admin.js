@@ -275,4 +275,65 @@ router.delete('/roadmaps/:id', [auth, admin], async (req, res) => {
     }
 });
 
+// @route   GET api/admin/pending-projects
+// @desc    Get all roadmaps with pending projects
+// @access  Private/Admin
+router.get('/pending-projects', [auth, admin], async (req, res) => {
+    try {
+        const roadmaps = await Roadmap.find({
+            $or: [
+                { 'phases.handsOnProject.status': 'Pending', 'phases.handsOnProject.solutionUrl': { $ne: null } },
+                { 'capstoneProject.status': 'Pending', 'capstoneProject.solutionUrl': { $ne: null } }
+            ]
+        }).populate('userId', 'username email').sort({ updatedAt: -1 });
+
+        res.json(roadmaps);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/admin/roadmaps/:id/approve-project
+// @desc    Approve or reject a submitted project
+// @access  Private/Admin
+router.put('/roadmaps/:id/approve-project', [auth, admin], async (req, res) => {
+    try {
+        const { phaseIndex, action, isCapstone } = req.body; // action: 'Approve' | 'Reject'
+        const roadmap = await Roadmap.findById(req.params.id);
+        if (!roadmap) return res.status(404).json({ msg: 'Roadmap not found' });
+
+        const statusLabel = action === 'Approve' ? 'Approved' : 'Rejected';
+        const isCompletedNow = action === 'Approve';
+
+        if (isCapstone) {
+            if (roadmap.capstoneProject) {
+                roadmap.capstoneProject.status = statusLabel;
+                roadmap.capstoneProject.completed = isCompletedNow;
+            }
+        } else if (phaseIndex !== undefined && roadmap.phases[phaseIndex]) {
+            if (roadmap.phases[phaseIndex].handsOnProject) {
+                roadmap.phases[phaseIndex].handsOnProject.status = statusLabel;
+                roadmap.phases[phaseIndex].handsOnProject.completed = isCompletedNow;
+            }
+        }
+
+        roadmap.markModified('phases');
+        if (isCapstone) roadmap.markModified('capstoneProject');
+        await roadmap.save();
+
+        const log = new AuditLog({
+            userId: req.user.id,
+            action: `MODERATION_PROJECT_${action.toUpperCase()}`,
+            metadata: { roadmapId: req.params.id, phaseIndex, isCapstone }
+        });
+        await log.save();
+
+        res.json(roadmap);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;

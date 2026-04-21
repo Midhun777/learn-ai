@@ -9,10 +9,7 @@ const Home = () => {
                 <div className="absolute inset-x-0 top-0 h-[800px] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none -z-10"></div>
 
                 <div className="max-w-5xl mx-auto text-center animate-fade-in relative z-10">
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-gray-200 shadow-sm mb-8 hover:shadow-md transition-shadow">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span className="text-xs font-semibold text-gray-700 tracking-wide">SkillRoute Engine v2.0 Online • 99.9% Uptime</span>
-                    </div>
+
 
                     <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-900 tracking-tight leading-[1.05] mb-8">
                         Learn anything <br className="hidden md:block" />

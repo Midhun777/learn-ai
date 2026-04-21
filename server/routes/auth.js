@@ -160,4 +160,29 @@ router.put('/profile', auth, async (req, res) => {
     }
 });
 
+// @route   DELETE api/auth/account
+// @desc    Delete user account
+// @access  Private
+router.delete('/account', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        // Log deletion
+        const log = new AuditLog({
+            userId: user.id,
+            action: 'USER_DELETE',
+            metadata: { username: user.username }
+        });
+        await log.save();
+
+        await User.findByIdAndDelete(req.user.id);
+        
+        res.json({ msg: 'User deleted successfully' });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+});
+
 module.exports = router;

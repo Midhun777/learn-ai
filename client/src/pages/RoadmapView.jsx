@@ -39,7 +39,18 @@ const RoadmapView = () => {
 
         const totalTopics = updatedPhases.reduce((acc, p) => acc + p.topics.length, 0);
         const completedTopics = updatedPhases.reduce((acc, p) => acc + p.topics.filter(t => t.completed).length, 0);
-        const isCompleted = totalTopics === completedTopics;
+        
+        let allProjectsFinished = true;
+        updatedPhases.forEach(p => {
+            if (p.handsOnProject && (!p.handsOnProject.solutionUrl || p.handsOnProject.status !== 'Approved')) {
+                allProjectsFinished = false;
+            }
+        });
+        if (roadmap.capstoneProject && (!roadmap.capstoneProject.solutionUrl || roadmap.capstoneProject.status !== 'Approved')) {
+            allProjectsFinished = false;
+        }
+
+        const isCompleted = (totalTopics === completedTopics) && allProjectsFinished;
 
         try {
             const res = await axios.put(`http://localhost:5000/api/roadmap/${id}/update`, {
@@ -277,12 +288,22 @@ const RoadmapView = () => {
                                                 {phase.handsOnProject.description}
                                             </p>
                                             
-                                            {phase.handsOnProject.completed ? (
+                                            {phase.handsOnProject.solutionUrl ? (
                                                 <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 relative z-10">
                                                     <div className="flex items-center justify-between mb-3">
-                                                        <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wide flex items-center gap-1">
-                                                            <CheckCircle className="w-3 h-3" /> Submitted
-                                                        </span>
+                                                        {phase.handsOnProject.status === 'Approved' ? (
+                                                            <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wide flex items-center gap-1">
+                                                                <CheckCircle className="w-3 h-3" /> Approved
+                                                            </span>
+                                                        ) : phase.handsOnProject.status === 'Rejected' ? (
+                                                            <span className="text-xs font-semibold text-rose-400 uppercase tracking-wide flex items-center gap-1">
+                                                                <X className="w-3 h-3" /> Rejected
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-xs font-semibold text-amber-400 uppercase tracking-wide flex items-center gap-1">
+                                                                <Clock className="w-3 h-3" /> Pending Approval
+                                                            </span>
+                                                        )}
                                                         {phase.handsOnProject.submittedAt && (
                                                             <span className="text-xs text-gray-400">
                                                                 {new Date(phase.handsOnProject.submittedAt).toLocaleDateString()}
@@ -304,6 +325,17 @@ const RoadmapView = () => {
                                                     className="px-5 py-2.5 bg-white text-gray-900 rounded-md text-sm font-bold shadow-sm hover:bg-gray-100 transition-colors relative z-10"
                                                 >
                                                     Start Project
+                                                </button>
+                                            )}
+                                            {phase.handsOnProject.status === 'Rejected' && (
+                                                <button 
+                                                    onClick={() => {
+                                                        setProjectPhaseIndex(pIdx);
+                                                        setProjectModalOpen(true);
+                                                    }}
+                                                    className="mt-4 px-5 py-2.5 bg-rose-500 text-white rounded-md text-sm font-bold shadow-sm hover:bg-rose-600 transition-colors relative z-10 w-fit"
+                                                >
+                                                    Resubmit Project
                                                 </button>
                                             )}
                                         </div>

@@ -391,7 +391,8 @@ router.put('/:id/phase/:phaseIndex/project', auth, async (req, res) => {
             return res.status(404).json({ msg: 'Project not found' });
         }
 
-        roadmap.phases[phaseIndex].handsOnProject.completed = true;
+        roadmap.phases[phaseIndex].handsOnProject.completed = false; // Requires approval
+        roadmap.phases[phaseIndex].handsOnProject.status = 'Pending';
         roadmap.phases[phaseIndex].handsOnProject.solutionUrl = solutionUrl;
         roadmap.phases[phaseIndex].handsOnProject.submittedAt = new Date();
 

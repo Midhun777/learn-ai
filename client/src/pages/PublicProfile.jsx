@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Award, BookOpen, User, Trophy, Target, Sparkles, Shield, ArrowLeft, ChevronRight, Share2, ExternalLink, Plus } from 'lucide-react';
+import Avatar from '../components/Avatar';
 
 const PublicProfile = () => {
     const { username } = useParams();
@@ -93,25 +94,23 @@ const PublicProfile = () => {
                 <div className="glass-panel p-10 md:p-16 text-center relative overflow-hidden mb-12 rounded-[32px]">
                     <div className="relative z-10 flex flex-col items-center">
                         <div className="relative mb-8">
-                            <div className="w-28 h-28 bg-white border border-ui-border text-brand-primary rounded-[32px] flex items-center justify-center shadow-premium group-hover:scale-105 transition-transform duration-500 overflow-hidden">
-                                <User className="w-14 h-14" />
-                            </div>
+                            <Avatar user={user} size="24" className="shadow-premium" />
                             <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-brand-primary to-brand-secondary text-white flex items-center justify-center rounded-2xl shadow-glow rotate-12">
                                 <Sparkles className="w-5 h-5" />
                             </div>
                         </div>
 
-                        <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-6 uppercase tracking-tight leading-none">
+                        <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 uppercase tracking-tight leading-none">
                             {user.username}<span className="text-brand-primary">.</span>
                         </h1>
 
-                        <div className="flex flex-wrap justify-center gap-3 mb-10">
+                        <div className="flex flex-wrap justify-center gap-3 mb-8">
                             <span className="badge-primary">Dedicated Learner</span>
                             <span className="badge-success">Community Member</span>
                         </div>
 
-                        <div className="max-w-2xl mx-auto px-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                            <p className="text-lg font-medium text-slate-500 uppercase leading-relaxed tracking-tight italic">
+                        <div className="max-w-lg mx-auto px-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                            <p className="text-sm md:text-base font-medium text-slate-500 uppercase leading-relaxed tracking-tight italic">
                                 "Passionate about learning and mastering new skills through AI-powered paths."
                             </p>
                         </div>

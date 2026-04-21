@@ -60,10 +60,7 @@ const Login = () => {
                         </div>
 
                         <div className="space-y-1.5">
-                            <div className="flex justify-between items-center">
-                                <label className="text-sm font-medium text-gray-700">Password</label>
-                                <button type="button" className="text-xs font-medium text-brand-primary hover:text-black transition-colors">Forgot password?</button>
-                            </div>
+                            <label className="text-sm font-medium text-gray-700">Password</label>
                             <div className="relative group">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
                                 <input

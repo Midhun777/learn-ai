@@ -65,6 +65,11 @@ const RoadmapSchema = new mongoose.Schema({
                 },
                 submittedAt: {
                     type: Date
+                },
+                status: {
+                    type: String,
+                    enum: ['Pending', 'Approved', 'Rejected'],
+                    default: 'Pending'
                 }
             }
         }
@@ -81,6 +86,11 @@ const RoadmapSchema = new mongoose.Schema({
         },
         submittedAt: {
             type: Date
+        },
+        status: {
+            type: String,
+            enum: ['Pending', 'Approved', 'Rejected'],
+            default: 'Pending'
         }
     },
     isCompleted: {

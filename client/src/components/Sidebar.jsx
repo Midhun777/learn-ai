@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
-import { LayoutDashboard, BookOpen, Award, Settings, LogOut, User, Box, ChevronRight, Shield, FileText, Briefcase, MessageSquare, Trophy } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Award, Settings, LogOut, Box, ChevronRight, Shield, FileText, Briefcase, MessageSquare, Trophy, Activity } from 'lucide-react';
+import Avatar from './Avatar';
 
 const Sidebar = () => {
     const { user, logout } = useContext(AuthContext);
@@ -14,7 +15,6 @@ const Sidebar = () => {
         { icon: LayoutDashboard, label: 'My Dashboard', path: '/dashboard' },
         { icon: BookOpen, label: 'Learning Paths', path: '/dashboard' },
         { icon: MessageSquare, label: 'Community', path: '/community' },
-        { icon: FileText, label: 'Saved Profile', path: '/career/resume' },
         { icon: Briefcase, label: 'Suggestions', path: '/career-recommendation' },
         { icon: Trophy, label: 'Top Learners', path: '/leaderboard' },
         { icon: Award, label: 'Badges', path: '/dashboard' },
@@ -42,7 +42,7 @@ const Sidebar = () => {
             <div className="h-16 flex items-center px-6 border-b border-ui-border">
                 <Link to="/" className="flex items-center gap-2.5 group">
                     <div className="w-8 h-8 bg-gray-900 text-white flex items-center justify-center rounded-lg shadow-sm transition-transform duration-300 group-hover:scale-105">
-                        <Box className="w-4 h-4" />
+                        <Activity className="w-3 h-3" />
                     </div>
                     <span className="text-xl font-bold tracking-tight text-gray-900 leading-none">
                         SkillRoute
@@ -74,9 +74,7 @@ const Sidebar = () => {
                     className="flex items-center gap-3 p-2 rounded-md cursor-pointer hover:bg-gray-50 transition-colors duration-150"
                     onClick={() => navigate('/profile')}
                 >
-                    <div className="w-10 h-10 bg-gray-100 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 overflow-hidden">
-                        <User className="w-5 h-5" />
-                    </div>
+                    <Avatar user={user} size="10" />
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                             <p className="text-sm font-semibold text-gray-900 truncate">

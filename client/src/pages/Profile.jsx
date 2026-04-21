@@ -2,10 +2,11 @@ import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
-import { User, Mail, Shield, Check, Edit2, AlertCircle, Share2, Eye, EyeOff, LayoutDashboard } from 'lucide-react';
+import { Mail, Shield, Check, Edit2, AlertCircle, Share2, Eye, EyeOff, LayoutDashboard } from 'lucide-react';
+import Avatar from '../components/Avatar';
 
 const Profile = () => {
-    const { user, updateUser } = useContext(AuthContext);
+    const { user, updateUser, deleteAccount } = useContext(AuthContext);
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
@@ -52,6 +53,17 @@ const Profile = () => {
         }
     };
 
+    const handleDeleteAccount = async () => {
+        if (window.confirm('Are you sure you want to permanently delete your account? This action cannot be undone.')) {
+            try {
+                await deleteAccount();
+            } catch (err) {
+                console.error('Failed to delete account', err);
+                alert('Failed to delete account. Please try again.');
+            }
+        }
+    };
+
     if (loading) return <LoadingScreen />;
 
     return (
@@ -69,9 +81,7 @@ const Profile = () => {
                     {/* Sidebar / Quick Info */}
                     <div className="md:col-span-4 space-y-6">
                         <div className="saas-card p-6 flex flex-col items-center text-center">
-                            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 mb-4 border border-gray-200">
-                                <User className="w-10 h-10" />
-                            </div>
+                            <Avatar user={user} size="24" className="mb-4" />
                             <h2 className="text-xl font-bold text-gray-900 mb-1">{user?.name || user?.username}</h2>
                             <p className="text-sm font-medium text-gray-500 mb-4">@{user?.username}</p>
                             <span className="badge-primary px-3 py-1">Free Plan</span>
@@ -209,7 +219,10 @@ const Profile = () => {
                                         </h4>
                                         <p className="text-sm text-gray-500">Permanently remove your account and all associated data.</p>
                                     </div>
-                                    <button className="shrink-0 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors">
+                                    <button 
+                                        onClick={handleDeleteAccount}
+                                        className="shrink-0 px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+                                    >
                                         Delete Data
                                     </button>
                                 </div>

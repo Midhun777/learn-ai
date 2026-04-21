@@ -58,6 +58,12 @@ const UserSchema = new mongoose.Schema({
             }
         }
     ],
+    avatar: {
+        type: String,
+        default: function() {
+            return `https://api.dicebear.com/7.x/avataaars/svg?seed=${this.username}`;
+        }
+    },
     lastActiveDate: {
         type: String // YYYY-MM-DD
     },

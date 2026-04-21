@@ -19,4 +19,19 @@ Error: Failed to generate roadmap
     at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:18:29\nError: Failed to generate roadmap
     at generateRoadmap (D:\vs-code\main-projects\learn-ai\server\services\geminiService.js:82:15)
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:18:29\n
+    at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:18:29\nError: Failed to generate roadmap
+    at generateRoadmap (D:\vs-code\main-projects\learn-ai\server\services\geminiService.js:82:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:19:29\nError: Failed to generate roadmap
+    at generateRoadmap (D:\vs-code\main-projects\learn-ai\server\services\geminiService.js:82:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:19:29\nError: Failed to generate roadmap
+    at generateRoadmap (D:\vs-code\main-projects\learn-ai\server\services\geminiService.js:82:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:19:29\nError: Failed to generate roadmap
+    at generateRoadmap (D:\vs-code\main-projects\learn-ai\server\services\geminiService.js:82:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:19:29\nError: Failed to generate roadmap
+    at generateRoadmap (D:\vs-code\main-projects\learn-ai\server\services\geminiService.js:82:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async D:\vs-code\main-projects\learn-ai\server\routes\roadmap.js:19:29\n

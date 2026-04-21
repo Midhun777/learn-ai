@@ -23,7 +23,8 @@ import {
     MoreVertical,
     Check,
     FileText,
-    Flame
+    Flame,
+    ExternalLink
 } from 'lucide-react';
 import {
     LineChart,
@@ -47,6 +48,7 @@ const AdminDashboard = () => {
     const [users, setUsers] = useState([]);
     const [logs, setLogs] = useState([]);
     const [roadmaps, setRoadmaps] = useState([]);
+    const [pendingProjects, setPendingProjects] = useState([]);
     const [growthData, setGrowthData] = useState({ dailySignups: [], monthlyActivity: [] });
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview'); // overview, users, content, audit
@@ -60,12 +62,13 @@ const AdminDashboard = () => {
     const fetchAdminData = async () => {
         try {
             setLoading(true);
-            const [statsRes, usersRes, logsRes, growthRes, roadmapsRes] = await Promise.all([
+            const [statsRes, usersRes, logsRes, growthRes, roadmapsRes, pendingRes] = await Promise.all([
                 axios.get('http://localhost:5000/api/admin/stats'),
                 axios.get('http://localhost:5000/api/admin/users'),
                 axios.get('http://localhost:5000/api/admin/logs'),
                 axios.get('http://localhost:5000/api/admin/analytics/growth').catch(() => ({ data: { dailySignups: [], monthlyActivity: [] } })),
-                axios.get('http://localhost:5000/api/admin/roadmaps')
+                axios.get('http://localhost:5000/api/admin/roadmaps'),
+                axios.get('http://localhost:5000/api/admin/pending-projects').catch(() => ({ data: [] }))
             ]);
 
             setStats(statsRes.data.stats);
@@ -73,6 +76,7 @@ const AdminDashboard = () => {
             setLogs(logsRes.data);
             setGrowthData(growthRes.data);
             setRoadmaps(roadmapsRes.data.roadmaps || []);
+            setPendingProjects(pendingRes.data || []);
         } catch (err) {
             console.error('Error fetching admin data:', err);
         } finally {
@@ -130,6 +134,16 @@ const AdminDashboard = () => {
         }
     };
 
+    const handleApproveProject = async (roadmapId, phaseIndex, isCapstone, action) => {
+        if (!window.confirm(`Are you sure you want to ${action} this project?`)) return;
+        try {
+            await axios.put(`http://localhost:5000/api/admin/roadmaps/${roadmapId}/approve-project`, { phaseIndex, isCapstone, action });
+            fetchAdminData();
+        } catch (err) {
+            alert('Action failed: ' + (err.response?.data?.msg || err.message));
+        }
+    };
+
     const filteredUsers = users.filter(u => {
         const matchesSearch = u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
             u.email.toLowerCase().includes(searchQuery.toLowerCase());
@@ -164,13 +178,13 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="flex bg-white p-1.5 rounded-[28px] shadow-premium border border-slate-100 backdrop-blur-md overflow-x-auto no-scrollbar">
-                    {['overview', 'users', 'content', 'audit'].map(tab => (
+                    {['overview', 'users', 'content', 'approvals', 'audit'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-6 lg:px-10 py-3.5 rounded-[22px] text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap ${activeTab === tab ? 'bg-slate-900 text-white shadow-glow translate-y-[-2px]' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                         >
-                            {tab === 'content' ? 'Content Moderation' : tab}
+                            {tab === 'content' ? 'Content Moderation' : tab === 'approvals' ? 'Project Approvals' : tab}
                         </button>
                     ))}
                 </div>
@@ -513,6 +527,69 @@ const AdminDashboard = () => {
                                     <p className="text-xl font-black text-slate-900 uppercase tracking-tighter mb-2">Data Void</p>
                                     <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No roadmaps currently exist within the system matrix.</p>
                                 </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'approvals' && (
+                <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-700">
+                    <div className="p-10 bg-white rounded-[48px] shadow-premium border border-slate-100 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-2">Project Approvals</h2>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Review and approve submitted projects</p>
+                        </div>
+                        <div className="p-6 bg-amber-50 rounded-full text-amber-500">
+                            <CheckCircle className="w-8 h-8" />
+                        </div>
+                    </div>
+
+                    <div className="saas-card bg-white overflow-hidden shadow-premium border-none rounded-[48px]">
+                        {pendingProjects.length === 0 ? (
+                             <div className="p-32 flex flex-col items-center justify-center gap-6 text-center">
+                                <div className="p-10 bg-slate-50 rounded-full">
+                                    <Check className="w-16 h-16 text-slate-200" />
+                                </div>
+                                <div>
+                                    <p className="text-xl font-black text-slate-900 uppercase tracking-tighter mb-2">All Caught Up</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">No projects are currently pending approval.</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-slate-50">
+                                {pendingProjects.map(roadmap => {
+                                    // Extract the pending projects from the roadmap
+                                    const pendingItems = [];
+                                    roadmap.phases.forEach((p, idx) => {
+                                        if (p.handsOnProject && p.handsOnProject.status === 'Pending' && p.handsOnProject.solutionUrl) {
+                                            pendingItems.push({ ...p.handsOnProject, isCapstone: false, phaseIndex: idx, skill: roadmap.skill, roadmapId: roadmap._id, username: roadmap.userId?.username });
+                                        }
+                                    });
+                                    if (roadmap.capstoneProject && roadmap.capstoneProject.status === 'Pending' && roadmap.capstoneProject.solutionUrl) {
+                                        pendingItems.push({ ...roadmap.capstoneProject, isCapstone: true, skill: roadmap.skill, roadmapId: roadmap._id, username: roadmap.userId?.username });
+                                    }
+                                    return pendingItems.map((item, i) => (
+                                        <div key={`${item.roadmapId}-${i}`} className="p-8 flex items-center justify-between hover:bg-slate-50/50 transition-all">
+                                            <div className="flex items-center gap-6">
+                                                <div className="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-500 shadow-soft">
+                                                    <Clock className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-black text-slate-900 uppercase tracking-tight mb-1">{item.title || 'Project Submission'}</p>
+                                                    <p className="text-[10px] font-bold text-slate-400">Roadmap: {item.skill} • User: {item.username}</p>
+                                                    <a href={item.solutionUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 mt-2 text-[10px] font-black text-brand-primary uppercase tracking-widest hover:text-brand-primary/80">
+                                                        <ExternalLink className="w-3 h-3" /> View Solution
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <button onClick={() => handleApproveProject(item.roadmapId, item.phaseIndex, item.isCapstone, 'Reject')} className="px-6 py-3 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 text-[10px] font-black uppercase tracking-widest transition-colors">Reject</button>
+                                                <button onClick={() => handleApproveProject(item.roadmapId, item.phaseIndex, item.isCapstone, 'Approve')} className="px-6 py-3 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 text-[10px] font-black uppercase tracking-widest transition-colors shadow-glow">Approve</button>
+                                            </div>
+                                        </div>
+                                    ));
+                                })}
                             </div>
                         )}
                     </div>

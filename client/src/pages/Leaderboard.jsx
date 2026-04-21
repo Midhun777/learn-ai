@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
-import { Trophy, Medal, Map, ArrowUp, Activity, User, ChevronRight } from 'lucide-react';
+import { Trophy, Medal, Map, ArrowUp, Activity, ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import Avatar from '../components/Avatar';
 
 const Leaderboard = () => {
     const { user: currentUser } = useContext(AuthContext);
@@ -97,9 +98,7 @@ const Leaderboard = () => {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-brand-primary font-bold text-sm">
-                                                        {user.name.charAt(0)}
-                                                    </div>
+                                                    <Avatar user={user} size="10" />
                                                     <div>
                                                         <p className={`font-bold text-base leading-tight ${isMe ? 'text-brand-primary' : 'text-gray-900'}`}>
                                                             {user.name}
@@ -141,7 +140,7 @@ const Leaderboard = () => {
 
                 <div className="flex justify-center">
                     <div className="bg-gray-100/50 rounded-full px-6 py-2 border border-gray-200 flex items-center gap-3 text-xs font-medium text-gray-500">
-                        <User className="w-3 h-3" />
+                        <Activity className="w-3 h-3" />
                         Showing top 20 learners in the global community
                     </div>
                 </div>
