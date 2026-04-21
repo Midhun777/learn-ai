@@ -76,7 +76,7 @@ const PublicProfile = () => {
 
             <main className="p-6 md:p-12 animate-fade-in max-w-6xl mx-auto">
                 {/* Header Control */}
-                <div className="mb-10 flex justify-between items-center">
+                <div className="mb-6 flex justify-between items-center px-2">
                     <button
                         onClick={() => navigate(-1)}
                         className="group flex items-center gap-2 text-ui-muted font-bold text-[10px] tracking-widest uppercase hover:text-brand-primary transition-all bg-white px-4 py-2 rounded-pill shadow-soft border border-ui-border"
@@ -91,16 +91,16 @@ const PublicProfile = () => {
                 </div>
 
                 {/* Hero Profile Block */}
-                <div className="glass-panel p-10 md:p-16 text-center relative overflow-hidden mb-12 rounded-[32px]">
+                <div className="glass-panel p-8 md:p-12 text-center relative overflow-hidden mb-10 rounded-[32px]">
                     <div className="relative z-10 flex flex-col items-center">
-                        <div className="relative mb-8">
+                        <div className="relative mb-6">
                             <Avatar user={user} size="24" className="shadow-premium" />
-                            <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-brand-primary to-brand-secondary text-white flex items-center justify-center rounded-2xl shadow-glow rotate-12">
-                                <Sparkles className="w-5 h-5" />
+                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-brand-primary to-brand-secondary text-white flex items-center justify-center rounded-xl shadow-glow rotate-12">
+                                <Sparkles className="w-4 h-4" />
                             </div>
                         </div>
 
-                        <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 uppercase tracking-tight leading-none">
+                        <h1 className="text-3xl md:text-5xl font-black text-slate-900 mb-4 uppercase tracking-tight leading-none break-all">
                             {user.username}<span className="text-brand-primary">.</span>
                         </h1>
 
@@ -109,8 +109,8 @@ const PublicProfile = () => {
                             <span className="badge-success">Community Member</span>
                         </div>
 
-                        <div className="max-w-lg mx-auto px-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100">
-                            <p className="text-sm md:text-base font-medium text-slate-500 uppercase leading-relaxed tracking-tight italic">
+                        <div className="max-w-xl mx-auto px-6 py-4 bg-slate-50/50 rounded-2xl border border-slate-100">
+                            <p className="text-xs md:text-sm font-medium text-slate-500 uppercase leading-relaxed tracking-wider italic">
                                 "Passionate about learning and mastering new skills through AI-powered paths."
                             </p>
                         </div>
@@ -118,18 +118,18 @@ const PublicProfile = () => {
                 </div>
 
                 {/* Statistics Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     {[
                         { label: 'COMPLETED PATHS', value: stats.completedCount, icon: Trophy, color: 'text-brand-primary', bg: 'bg-brand-primary/5' },
                         { label: 'ACTIVE PATHS', value: stats.totalCount, icon: Target, color: 'text-brand-secondary', bg: 'bg-brand-secondary/5' },
-                        { label: 'BADGES EARNED', value: stats.completedCount, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-50/5' }
+                        { label: 'CERTIFICATES & BADGES', value: stats.completedCount, icon: Award, color: 'text-emerald-500', bg: 'bg-emerald-50/5' }
                     ].map((s, i) => (
-                        <div key={i} className="saas-card p-8 flex flex-col items-center justify-center text-center">
-                            <div className={`w-14 h-14 ${s.bg} ${s.color} rounded-2xl flex items-center justify-center mb-6 border border-white/50 shadow-soft`}>
-                                <s.icon className="w-7 h-7" />
+                        <div key={i} className="saas-card p-6 flex flex-col items-center justify-center text-center hover:-translate-y-1 transition-transform">
+                            <div className={`w-12 h-12 ${s.bg} ${s.color} rounded-2xl flex items-center justify-center mb-4 border border-white/50 shadow-soft`}>
+                                <s.icon className="w-6 h-6" />
                             </div>
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-2 text-ui-muted italic">{s.label}</p>
-                            <p className="text-5xl font-black tracking-tighter text-slate-900">{s.value}</p>
+                            <p className="text-[9px] font-black uppercase tracking-[0.2em] mb-1 text-slate-400 italic">{s.label}</p>
+                            <p className="text-4xl font-black tracking-tighter text-slate-900">{s.value}</p>
                         </div>
                     ))}
                 </div>

@@ -367,9 +367,9 @@ const RoadmapView = () => {
                                 {user?.name || user?.username}
                             </h3>
 
-                            <p className="text-gray-500 mb-4">has successfully finished this path:</p>
+                            <p className="text-gray-500 mb-6 font-medium text-sm">has successfully finished this learning path:</p>
 
-                            <h4 className="text-2xl font-bold text-gray-900 mb-16">{roadmap.skill}</h4>
+                            <h4 className="text-3xl font-black text-gray-900 mb-16 uppercase tracking-tight">{roadmap.skill}</h4>
 
                             <div className="flex justify-between items-end border-t border-gray-100 pt-8 text-left">
                                 <div>
