@@ -206,18 +206,7 @@ router.post('/explain', auth, async (req, res) => {
     }
 });
 
-// @route   POST api/roadmap/chat
-// @desc    Chat with AI Tutor
-// @access  Private
-router.post('/chat', auth, async (req, res) => {
-    try {
-        const response = await chatWithAI(message, skill);
-        res.json({ reply: response });
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
+
 
 // @route   POST api/roadmap/:id/schedule
 // @desc    Generate AI Study Schedule
@@ -401,6 +390,41 @@ router.put('/:id/phase/:phaseIndex/project', auth, async (req, res) => {
 
         // Gamification: Award XP for project submission
         await GamificationService.awardXP(req.user.id, 150, 'Project Submitted');
+        await GamificationService.updateStreak(req.user.id);
+
+        res.json(roadmap);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/roadmap/:id/capstone/project
+// @desc    Submit Capstone Project
+// @access  Private
+router.put('/:id/capstone/project', auth, async (req, res) => {
+    try {
+        const { solutionUrl } = req.body;
+        const roadmap = await Roadmap.findById(req.params.id);
+
+        if (!roadmap || roadmap.userId.toString() !== req.user.id) {
+            return res.status(404).json({ msg: 'Roadmap not found' });
+        }
+
+        if (!roadmap.capstoneProject) {
+            return res.status(404).json({ msg: 'Capstone project not defined for this path' });
+        }
+
+        roadmap.capstoneProject.completed = false; // Requires approval
+        roadmap.capstoneProject.status = 'Pending';
+        roadmap.capstoneProject.solutionUrl = solutionUrl;
+        roadmap.capstoneProject.submittedAt = new Date();
+
+        roadmap.markModified('capstoneProject');
+        await roadmap.save();
+
+        // Gamification: Award higher XP for capstone
+        await GamificationService.awardXP(req.user.id, 300, 'Capstone Submitted');
         await GamificationService.updateStreak(req.user.id);
 
         res.json(roadmap);

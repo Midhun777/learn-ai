@@ -39,7 +39,7 @@ const LoadingScreen = () => {
 
             <div className="text-center relative z-10">
                 <div className="h-10 mb-10 overflow-hidden">
-                    <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Loading LearnAI...</h2>
+                    <h2 className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Loading SkillRoute AI...</h2>
                     <p className="text-[10px] font-bold text-brand-primary uppercase tracking-[0.3em] mb-12">System Initialization</p>
                 </div>
 
@@ -51,7 +51,7 @@ const LoadingScreen = () => {
                             style={{ width: `${((index + 1) / quotes.length) * 100}%` }}
                         ></div>
                     </div>
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.8em]">LEARN.AI_QUANTUM_CORE</span>
+                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.8em]">SKILLROUTE.AI_QUANTUM_CORE</span>
                 </div>
             </div>
         </div>

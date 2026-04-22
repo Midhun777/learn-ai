@@ -210,7 +210,7 @@ const PublicProfile = () => {
             </main>
 
             <footer className="max-w-6xl mx-auto px-6 pb-12 mt-12 text-center">
-                <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em] mb-4">Architected by Learn AI Platform</p>
+                <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em] mb-4">Architected by SkillRoute AI Platform</p>
                 <div className="flex justify-center gap-6">
                     <Share2 className="w-4 h-4 text-slate-300 hover:text-brand-primary cursor-pointer transition-colors" />
                     <ExternalLink className="w-4 h-4 text-slate-300 hover:text-brand-primary cursor-pointer transition-colors" />

@@ -163,8 +163,8 @@ router.get('/pending-projects', [auth, mentor], async (req, res) => {
     try {
         const roadmaps = await Roadmap.find({
             $or: [
-                { 'phases.handsOnProject.status': 'Pending', 'phases.handsOnProject.solutionUrl': { $ne: null } },
-                { 'capstoneProject.status': 'Pending', 'capstoneProject.solutionUrl': { $ne: null } }
+                { phases: { $elemMatch: { 'handsOnProject.status': 'Pending', 'handsOnProject.solutionUrl': { $exists: true, $ne: '' } } } },
+                { 'capstoneProject.status': 'Pending', 'capstoneProject.solutionUrl': { $exists: true, $ne: '' } }
             ]
         }).populate('userId', 'username email').sort({ updatedAt: -1 });
 
@@ -201,6 +201,23 @@ router.put('/roadmaps/:id/approve-project', [auth, mentor], async (req, res) => 
 
         roadmap.markModified('phases');
         if (isCapstone) roadmap.markModified('capstoneProject');
+
+        // Recalculate global completion status
+        const totalTopics = roadmap.phases.reduce((acc, p) => acc + p.topics.length, 0);
+        const completedTopics = roadmap.phases.reduce((acc, p) => acc + p.topics.filter(t => t.completed).length, 0);
+        
+        let allProjectsFinished = true;
+        roadmap.phases.forEach(p => {
+            if (p.handsOnProject && (!p.handsOnProject.solutionUrl || p.handsOnProject.status !== 'Approved')) {
+                allProjectsFinished = false;
+            }
+        });
+        if (roadmap.capstoneProject && (!roadmap.capstoneProject.solutionUrl || roadmap.capstoneProject.status !== 'Approved')) {
+            allProjectsFinished = false;
+        }
+
+        roadmap.isCompleted = (totalTopics === completedTopics) && allProjectsFinished;
+
         await roadmap.save();
 
         res.json(roadmap);

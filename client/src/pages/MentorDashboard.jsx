@@ -187,7 +187,9 @@ const MentorDashboard = () => {
                             onClick={() => setShowApprovals(true)}
                             className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${showApprovals ? 'bg-amber-500 text-white shadow-glow' : 'text-slate-400 hover:text-slate-600'}`}
                         >
-                            Approvals {pendingProjects.length > 0 && `(${pendingProjects.reduce((acc, r) => acc + (r.phases.filter(p => p.handsOnProject?.status === 'Pending' && p.handsOnProject?.solutionUrl).length) + (r.capstoneProject?.status === 'Pending' && r.capstoneProject?.solutionUrl ? 1 : 0), 0)})`}
+                            Approvals {pendingProjects.length > 0 && `(${pendingProjects.reduce((acc, r) => acc + 
+                                (r.phases ? r.phases.filter(p => p.handsOnProject?.status === 'Pending' && p.handsOnProject?.solutionUrl).length : 0) + 
+                                (r.capstoneProject?.status === 'Pending' && r.capstoneProject?.solutionUrl ? 1 : 0), 0)})`}
                         </button>
                     </div>
                     <button onClick={fetchUsers} className="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl shadow-soft hover:bg-slate-50 transition-all">
@@ -260,7 +262,7 @@ const MentorDashboard = () => {
                                     <div className="space-y-4">
                                         {pendingProjects.map(roadmap => {
                                             const pendingItems = [];
-                                            roadmap.phases.forEach((p, idx) => {
+                                            roadmap.phases && roadmap.phases.forEach((p, idx) => {
                                                 if (p.handsOnProject && p.handsOnProject.status === 'Pending' && p.handsOnProject.solutionUrl) {
                                                     pendingItems.push({ ...p.handsOnProject, isCapstone: false, phaseIndex: idx, skill: roadmap.skill, roadmapId: roadmap._id, username: roadmap.userId?.username });
                                                 }

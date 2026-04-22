@@ -136,44 +136,7 @@ const getExplanation = async (topic, skill) => {
     }
 };
 
-const chatWithAI = async (message, skill) => {
-    try {
-        const apiKey = process.env.GEMINI_API_KEY;
-        const model = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-        // Engineered Prompt for "Simple, Friendly, UI-ready" responses
-        const promptText = `
-        You are an expert, super friendly AI tutor helping a beginner student learn "${skill}".
-        The student asks: "${message}"
-
-        Guidelines:
-        1. Keep it **simple and easy to understand** (ELI5 style).
-        2. Use **analogies** or real-world examples whenever possible to explain concepts.
-        3. Use **Markdown** formatting to make it look good (bold key terms, use bullet points for lists).
-        4. Keep it concise (max 4-5 sentences unless a list is needed).
-        5. If showing code, use proper code blocks.
-
-        Return ONLY the formatted response text.
-        `;
-
-        const response = await axios.post(
-            url,
-            {
-                contents: [{ parts: [{ text: promptText }] }]
-            },
-            {
-                headers: { 'Content-Type': 'application/json' }
-            }
-        );
-
-        return response.data.candidates[0].content.parts[0].text;
-
-    } catch (error) {
-        console.error('Gemini Chat Error:', error.response?.data || error.message);
-        throw new Error('Failed to get chat response');
-    }
-};
 
 const generateStudySchedule = async (topics, hoursPerWeek = 5) => {
     try {
@@ -281,4 +244,4 @@ const generateCareerRecommendation = async (skills, interests, experienceLevel) 
     }
 };
 
-module.exports = { generateRoadmap, getExplanation, chatWithAI, generateStudySchedule, generateCareerRecommendation };
+module.exports = { generateRoadmap, getExplanation, generateStudySchedule, generateCareerRecommendation };

@@ -3,8 +3,9 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import LoadingScreen from '../components/LoadingScreen';
-import ChatWidget from '../components/ChatWidget';
-import { CheckCircle, Circle, Award, ArrowLeft, Target, Clock, ExternalLink, ShieldCheck, Trophy, X, LayoutTemplate } from 'lucide-react';
+
+import { CheckCircle, Circle, Award, ArrowLeft, Target, Clock, ExternalLink, ShieldCheck, Trophy, X, LayoutTemplate, Download } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
 const RoadmapView = () => {
     const { id } = useParams();
@@ -16,6 +17,8 @@ const RoadmapView = () => {
     const [projectPhaseIndex, setProjectPhaseIndex] = useState(null);
     const [solutionInput, setSolutionInput] = useState('');
     const [submittingProject, setSubmittingProject] = useState(false);
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+    const [isCapstoneSubmission, setIsCapstoneSubmission] = useState(false);
     const navigate = useNavigate();
     const { user } = useContext(AuthContext);
 
@@ -24,6 +27,7 @@ const RoadmapView = () => {
             try {
                 const res = await axios.get(`http://localhost:5000/api/roadmap/${id}`);
                 setRoadmap(res.data);
+                if (res.data.isCompleted) setShowCert(true);
                 setLoading(false);
             } catch (err) {
                 console.error(err);
@@ -64,17 +68,147 @@ const RoadmapView = () => {
         }
     };
 
+    const downloadPDF = () => {
+        setIsGeneratingPDF(true);
+        try {
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const margin = 15;
+            let y = 20;
+
+            pdf.setFontSize(22);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(roadmap.skill || 'Roadmap', margin, y);
+            y += 10;
+            
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(100, 100, 100);
+            const desc = roadmap.description || `A step-by-step path to master ${roadmap.skill}.`;
+            const splitDesc = pdf.splitTextToSize(desc, 180);
+            pdf.text(splitDesc, margin, y);
+            y += (splitDesc.length * 6) + 10;
+
+            pdf.setTextColor(0, 0, 0);
+
+            roadmap.phases.forEach((phase, pIdx) => {
+                if (y > 270) { pdf.addPage(); y = 20; }
+                
+                pdf.setFontSize(16);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(`Phase ${pIdx + 1}: ${phase.name || phase.title || 'Untitled Phase'}`, margin, y);
+                y += 6;
+                
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'italic');
+                pdf.setTextColor(100, 100, 100);
+                pdf.text(`Estimated Time: ${phase.estimatedTime || 'Self-paced'}`, margin, y);
+                pdf.setTextColor(0, 0, 0);
+                y += 10;
+
+                phase.topics.forEach((topic) => {
+                    if (y > 280) { pdf.addPage(); y = 20; }
+                    
+                    pdf.setFontSize(12);
+                    pdf.setFont('helvetica', 'bold');
+                    const status = topic.completed ? '[Done]' : '[Pending]';
+                    pdf.text(`${status} ${topic.title || topic.name}`, margin + 5, y);
+                    y += 6;
+                    
+                    pdf.setFontSize(10);
+                    pdf.setFont('helvetica', 'normal');
+                    const textDesc = typeof topic.description === 'string' ? topic.description : 'Learn the basics of this section.';
+                    const splitDescription = pdf.splitTextToSize(textDesc, 170);
+                    pdf.text(splitDescription, margin + 5, y);
+                    y += (splitDescription.length * 5) + 3;
+
+                    if (topic.resources && topic.resources.length > 0) {
+                        pdf.setFontSize(9);
+                        pdf.setFont('helvetica', 'italic');
+                        pdf.text('Resources:', margin + 10, y);
+                        y += 5;
+                        pdf.setFont('helvetica', 'normal');
+                        topic.resources.forEach(res => {
+                            if (y > 280) { pdf.addPage(); y = 20; }
+                            const resType = res.type || res.name || 'Link';
+                            const resUrl = res.url || '';
+                            const resText = `- ${resType}: ${resUrl}`;
+                            const splitRes = pdf.splitTextToSize(resText, 160);
+                            pdf.text(splitRes, margin + 10, y);
+                            y += (splitRes.length * 5);
+                        });
+                        y += 2;
+                    }
+                    y += 4;
+                });
+
+                if (phase.handsOnProject) {
+                    if (y > 260) { pdf.addPage(); y = 20; }
+                    y += 4;
+                    pdf.setFontSize(14);
+                    pdf.setFont('helvetica', 'bold');
+                    const projStatus = phase.handsOnProject.completed ? '[Done]' : '[Pending]';
+                    pdf.text(`Project: ${phase.handsOnProject.title} ${projStatus}`, margin + 5, y);
+                    y += 6;
+                    
+                    pdf.setFontSize(10);
+                    pdf.setFont('helvetica', 'normal');
+                    const textProjDesc = typeof phase.handsOnProject.description === 'string' ? phase.handsOnProject.description : '';
+                    const splitProjDesc = pdf.splitTextToSize(textProjDesc, 170);
+                    pdf.text(splitProjDesc, margin + 5, y);
+                    y += (splitProjDesc.length * 5) + 8;
+                }
+                
+                y += 6;
+            });
+
+            if (roadmap.capstoneProject) {
+                if (y > 260) { pdf.addPage(); y = 20; }
+                y += 5;
+                pdf.setFontSize(16);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(`Capstone Project: ${roadmap.capstoneProject.title}`, margin, y);
+                y += 6;
+                
+                pdf.setFontSize(10);
+                pdf.setFont('helvetica', 'normal');
+                const textCapDesc = typeof roadmap.capstoneProject.description === 'string' ? roadmap.capstoneProject.description : '';
+                const splitProjDesc = pdf.splitTextToSize(textCapDesc, 180);
+                pdf.text(splitProjDesc, margin, y);
+                y += (splitProjDesc.length * 5) + 10;
+            }
+
+            let fileName = roadmap.skill ? roadmap.skill.replace(/[^a-zA-Z0-9]/g, '_') : 'Roadmap';
+            pdf.save(`${fileName}_Roadmap.pdf`);
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+        } finally {
+            setIsGeneratingPDF(false);
+        }
+    };
+
     const handleProjectSubmit = async (e) => {
         e.preventDefault();
-        if (!solutionInput.trim()) return;
+        let url = solutionInput.trim();
+        if (!url) return;
+
+        // Auto-prefix https:// if missing
+        if (!/^https?:\/\//i.test(url)) {
+            url = 'https://' + url;
+        }
+
         setSubmittingProject(true);
         try {
-            const res = await axios.put(`http://localhost:5000/api/roadmap/${id}/phase/${projectPhaseIndex}/project`, {
-                solutionUrl: solutionInput.trim()
+            const endpoint = isCapstoneSubmission 
+                ? `http://localhost:5000/api/roadmap/${id}/capstone/project`
+                : `http://localhost:5000/api/roadmap/${id}/phase/${projectPhaseIndex}/project`;
+
+            const res = await axios.put(endpoint, {
+                solutionUrl: url
             });
             setRoadmap(res.data);
             setProjectModalOpen(false);
             setSolutionInput('');
+            setIsCapstoneSubmission(false);
         } catch (err) {
             console.error('Failed to submit project:', err);
         } finally {
@@ -102,6 +236,14 @@ const RoadmapView = () => {
                     Back to Dashboard
                 </Link>
                 <div className="flex items-center gap-4">
+                    <button
+                        onClick={downloadPDF}
+                        disabled={isGeneratingPDF}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-full text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+                    >
+                        <Download className="w-4 h-4" />
+                        {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+                    </button>
                     <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-full border border-gray-200">
                         <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                         <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Sync Active</span>
@@ -122,7 +264,7 @@ const RoadmapView = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
                     {/* Left Sidebar (Progress & Nav) */}
-                    <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit space-y-6">
+                    <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto space-y-6 pr-2 scrollbar-hide hover:scrollbar-default">
                         {/* Progress Card */}
                         <div className="saas-card p-6">
                             <h3 className="text-sm font-semibold text-gray-900 mb-4 tracking-tight">Overall Progress</h3>
@@ -178,7 +320,7 @@ const RoadmapView = () => {
                                                 {pProg === 100 ? <CheckCircle className="w-3 h-3" /> : i + 1}
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-sm font-medium text-gray-900 leading-snug">{p.title}</p>
+                                                <p className="text-sm font-medium text-gray-900 leading-snug">{p.name || p.title}</p>
                                             </div>
                                         </button>
                                     );
@@ -199,14 +341,14 @@ const RoadmapView = () => {
                             </p>
                         </div>
 
-                        {/* Phases */}
+                        {/* Phases List */}
                         <div className="space-y-12">
                             {roadmap.phases.map((phase, pIdx) => (
                                 <section key={pIdx} id={`phase-${pIdx}`} className="saas-card bg-transparent border-none shadow-none">
                                     <div className="mb-8">
                                         <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
                                             <span className="text-gray-300">{(pIdx + 1).toString().padStart(2, '0')}.</span>
-                                            {phase.title}
+                                            {phase.name || phase.title}
                                         </h2>
                                         <p className="text-sm font-medium text-gray-500 flex items-center gap-2">
                                             <Clock className="w-4 h-4" />
@@ -269,7 +411,7 @@ const RoadmapView = () => {
                                         })}
                                     </div>
 
-                                    {/* Project Card */}
+                                    {/* Phase Project */}
                                     {phase.handsOnProject && (
                                         <div className="mt-6 saas-card bg-gray-900 border-none p-8 text-white relative overflow-hidden">
                                             {phase.handsOnProject.completed && (
@@ -310,11 +452,9 @@ const RoadmapView = () => {
                                                             </span>
                                                         )}
                                                     </div>
-                                                    {phase.handsOnProject.solutionUrl && (
-                                                        <a href={phase.handsOnProject.solutionUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-brand-primary hover:text-brand-primary/80 transition-colors w-fit">
-                                                            <ExternalLink className="w-4 h-4" /> View My Work
-                                                        </a>
-                                                    )}
+                                                    <a href={phase.handsOnProject.solutionUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-brand-primary hover:text-brand-primary/80 transition-colors w-fit">
+                                                        <ExternalLink className="w-4 h-4" /> View My Work
+                                                    </a>
                                                 </div>
                                             ) : (
                                                 <button 
@@ -342,6 +482,86 @@ const RoadmapView = () => {
                                     )}
                                 </section>
                             ))}
+
+                            {/* Capstone Project Section */}
+                            {roadmap.capstoneProject && (
+                                <div className="mt-12 pt-12 border-t border-gray-100 animate-fade-in">
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <div className="w-10 h-10 rounded-xl bg-gray-900 text-white flex items-center justify-center shadow-lg">
+                                            <Trophy className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Capstone Challenge</h3>
+                                            <p className="text-sm text-gray-500 font-medium">The final project to validate your expertise.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="saas-card bg-slate-900 border-none p-8 text-white relative overflow-hidden shadow-2xl">
+                                        <div className="flex items-start gap-4 mb-4 relative z-10">
+                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${roadmap.capstoneProject.completed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-white'}`}>
+                                                {roadmap.capstoneProject.completed ? <CheckCircle className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
+                                            </div>
+                                            <div>
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-1">Graduation Project</span>
+                                                <h4 className="text-xl font-bold tracking-tight">{roadmap.capstoneProject.title || 'Mastery Project'}</h4>
+                                            </div>
+                                        </div>
+                                        <p className="text-gray-300 text-sm leading-relaxed mb-6 block w-full relative z-10">
+                                            {roadmap.capstoneProject.description}
+                                        </p>
+                                        
+                                        {roadmap.capstoneProject.solutionUrl ? (
+                                            <div className="bg-slate-800 rounded-lg p-5 border border-slate-700 relative z-10">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    {roadmap.capstoneProject.status === 'Approved' ? (
+                                                        <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                                                            Goal Achieved: Approved
+                                                        </span>
+                                                    ) : roadmap.capstoneProject.status === 'Rejected' ? (
+                                                        <span className="text-xs font-bold text-rose-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <X className="w-3 h-3" /> Resubmission Required
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs font-bold text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                                                            <Clock className="w-3 h-3" /> Evaluation in Progress
+                                                        </span>
+                                                    )}
+                                                    {roadmap.capstoneProject.submittedAt && (
+                                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                                                            Logged: {new Date(roadmap.capstoneProject.submittedAt).toLocaleDateString()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <a href={roadmap.capstoneProject.solutionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm text-brand-primary font-bold hover:text-white transition-colors">
+                                                    <ExternalLink className="w-4 h-4" /> Inspect Solution Asset
+                                                </a>
+                                            </div>
+                                        ) : (
+                                            <button 
+                                                onClick={() => {
+                                                    setIsCapstoneSubmission(true);
+                                                    setProjectModalOpen(true);
+                                                }}
+                                                className="px-6 py-3 bg-brand-primary text-white rounded-lg text-sm font-bold shadow-soft hover:bg-white hover:text-slate-900 transition-all relative z-10"
+                                            >
+                                                Submit Capstone Challenge
+                                            </button>
+                                        )}
+                                        {roadmap.capstoneProject.status === 'Rejected' && (
+                                            <button 
+                                                onClick={() => {
+                                                    setIsCapstoneSubmission(true);
+                                                    setProjectModalOpen(true);
+                                                }}
+                                                className="mt-4 px-6 py-3 bg-rose-500 text-white rounded-lg text-sm font-bold shadow-soft hover:bg-rose-600 transition-all relative z-10 block w-fit"
+                                            >
+                                                Retry Challenge
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -401,7 +621,7 @@ const RoadmapView = () => {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Solution URL</label>
                                 <input
-                                    type="url"
+                                    type="text"
                                     required
                                     placeholder="e.g., https://github.com/username/project"
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none transition-all"
@@ -423,7 +643,7 @@ const RoadmapView = () => {
                 </div>
             )}
 
-            <ChatWidget skill={roadmap.skill} />
+
         </div>
     );
 };
